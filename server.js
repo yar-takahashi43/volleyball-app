@@ -17,12 +17,13 @@ mongoose.connect(process.env.MONGOURL)
     })
 
 //ミドルウェアのルーティング設定
+app.use(express.json())
 app.use("/api/users", userRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/posts", postsRouter)
 
-// app.get("/", (req, res) => {
-//     res.send("hello")
-// })
+app.get("/", (req, res) => {
+    res.send("hello")
+})
 
 app.listen(PORT, () => console.log("サーバーが起動しました"))
