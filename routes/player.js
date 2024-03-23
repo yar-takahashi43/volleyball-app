@@ -4,7 +4,7 @@ const Player = require("../models/Player")
 //選手の登録
 router.post("/register", async (req, res) => {
     try{
-        newPlayer = await new Player({
+        const newPlayer = await new Player({
             num: req.body.num,
             name: req.body.name,
             nickname: req.body.nickname,
@@ -86,8 +86,47 @@ router.delete("/:id", async(req, res) => {
     }
 })
 
-// router.get("/", (req, res) => {
-//     res.send("player router")
-// })
+//以下追加項目
+// スパイク成功率
+// サーブ成功率
+
+// router.get("/playerStats/:playerId", async(req, res) => {
+//     try {
+//         const playerId = req.params.playerId;
+//         // プレイヤーが関与した全試合を取得
+//         const matches = await Match.find({}).populate('matches');
+//         let totalScore = 0;
+//         let totalServes = 0;
+//         let successfulServes = 0;
+//         let totalSpikes = 0;
+//         let successfulSpikes = 0;
+//         matches.forEach(match => {
+//             match.matches.forEach(set => {
+//                 set.actions.forEach(action => {
+//                     if (action.playerId === playerId) {
+//                         totalScore += action.score;
+//                         if (action.serve) {
+//                             totalServes++;
+//                             if (action.isAce) {
+//                                 successfulServes++;
+//                             }
+//                         }
+//                         if (action.getScore.includes("スパイク")) {
+//                             totalSpikes++;
+//                             if (action.score > 0) {
+//                                 successfulSpikes++;
+//                             }
+//                         }
+//                     }
+//                 });
+//             });
+//         });
+//         const serveSuccessRate = successfulServes / totalServes;
+//         const spikeSuccessRate = successfulSpikes / totalSpikes;
+//         res.status(200).json({ totalScore: totalScore, serveSuccessRate: serveSuccessRate, spikeSuccessRate: spikeSuccessRate });
+//     } catch (err) {
+//         return res.status(500).json(err);
+//     }
+// });
 
 module.exports = router

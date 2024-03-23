@@ -24,7 +24,7 @@ mongoose
 app.use(express.json())
 app.use("/api/users", userRouter)
 app.use("/api/auth", authRouter)
-app.use("/api/posts", postsRouter)
+// app.use("/api/posts", postsRouter)
 app.use("/api/opponent", opponentRouter)
 app.use("/api/match", matchRouter)
 app.use("/api/player", playerRouter)

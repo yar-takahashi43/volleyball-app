@@ -13,18 +13,19 @@ const PlayerSchema = new mongoose.Schema(
         },
         name:{
             type: String,
-            required: true,
+            require: true,
             min: 3,
             max: 25,
             unique: true,
         },
         nickname:{
             type: String,
-            required: true,
+            require: true,
             min: 1,
             max: 10,
             unique: true,
         },
+        // 以下項目は検討。
         spike:{
             type: Array,
             min: 0,
