@@ -7,15 +7,36 @@ const SetSchema = new mongoose.Schema(
             unique: true,
             require: true,
         },
+        myScore: {
+            type: Number,
+            default: 0,
+        },
+        opponentScore: {
+            type: Number,
+            default: 0,
+        },
+        reception : {
+            A: {receptionNum: {type: Number, default: 0}},
+            B: {receptionNum: {type: Number, default: 0}},
+            C: {receptionNum: {type: Number, default: 0}},
+            D: {receptionNum: {type: Number, default: 0}}
+        },
+        spike : [
+            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
+            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
+            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
+            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
+            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}}
+        ],
         actions: {
             type: Array,
             default: [],
+            min: 0,
+            max: 45,
             _id: {
                 type: String,
                 unique: true,
             },
-            min: 0,
-            max: 45,
             serve: {
                 type: Array,
                 default:["", "エース", "ミス"],
@@ -23,14 +44,19 @@ const SetSchema = new mongoose.Schema(
                     type: String,
                     default: null
                 },
-                isAce: {
-                    type: Boolean,
-                    default: false,
+                serveState:{
+                    type: String,
+                    enum: ['ace', 'miss', 'null'],
+                    default: null,
                 },
-                isMiss: {
-                    type: Boolean,
-                    default: false,
-                },
+                // isAce: {
+                //     type: Boolean,
+                //     default: false,
+                // },
+                // isMiss: {
+                //     type: Boolean,
+                //     default: false,
+                // },
                 score: {
                     type: Number,
                     default: 0,
