@@ -21,33 +21,10 @@ const UserSchema = new mongoose.Schema(
             max: 6,
             min: 50,
         },
-        profilePicture:{
-            type: String,
-            default: "",
-        },
-        coverPicture:{
-            type: String,
-            default: "",
-        },
-        followers:{
-            type: Array,
-            default: [],
-        },
-        followings:{
-            type: Array,
-            default: [],
-        },
+        // 権限に関するもの。ログインしているかどうか。
         isAdmin:{
             type: Boolean,
             default: false,
-        },
-        desc:{
-            type: String,
-            default: "",
-        },
-        city:{
-            type: String,
-            max: 50,
         },
     },
 
