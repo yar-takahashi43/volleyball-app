@@ -1,72 +1,64 @@
 {
-  "name": "real-sns-frontend",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.11.3",
-    "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.15.9",
-    "@mui/material": "^5.15.9",
-    "@mui/styled-engine-sc": "^6.0.0-alpha.16",
-    "@tanstack/react-table": "^8.13.2",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.2.0",
-    "react-beautiful-dnd": "^13.1.1",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.22.3",
-    "react-scripts": "^5.0.1",
-    "react-select": "^5.8.0",
-    "react-table": "^7.8.0",
-    "styled-components": "^6.1.8",
-    "web-vitals": "^2.1.4"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "name": "new-project",
+    "version": "1.0.0",
+    "description": "A merged project of volleyball-score and real-sns-frontend",
+    "main": "server.js",
+    "scripts": {
+      "start-backend": "nodemon server.js",
+      "start-frontend": "react-scripts start",
+      "build": "react-scripts build",
+      "test": "react-scripts test",
+      "eject": "react-scripts eject"
+    },
+    "repository": {
+      "type": "git",
+      "url": "new-project"
+    },
+    "author": "rei-san",
+    "license": "ISC",
+    "dependencies": {
+      "@emotion/react": "^11.11.3",
+      "@emotion/styled": "^11.11.0",
+      "@mui/icons-material": "^5.15.9",
+      "@mui/material": "^5.15.9",
+      "@mui/styled-engine-sc": "^6.0.0-alpha.16",
+      "@tanstack/react-table": "^8.13.2",
+      "@testing-library/jest-dom": "^5.17.0",
+      "@testing-library/react": "^13.4.0",
+      "@testing-library/user-event": "^13.5.0",
+      "dotenv": "^16.4.1",
+      "express": "^4.18.2",
+      "helmet": "^7.1.0",
+      "mongoose": "^8.1.1",
+      "nodemon": "^3.0.3",
+      "react": "^18.2.0",
+      "react-beautiful-dnd": "^13.1.1",
+      "react-dom": "^18.2.0",
+      "react-router-dom": "^6.22.3",
+      "react-scripts": "^5.0.1",
+      "react-select": "^5.8.0",
+      "react-table": "^7.8.0",
+      "styled-components": "^6.1.8",
+      "uuid": "^9.0.1",
+      "web-vitals": "^2.1.4"
+    },
+    "eslintConfig": {
+      "extends": [
+        "react-app",
+        "react-app/jest"
+      ]
+    },
+    "browserslist": {
+      "production": [
+        ">0.2%",
+        "not dead",
+        "not op_mini all"
+      ],
+      "development": [
+        "last 1 chrome version",
+        "last 1 firefox version",
+        "last 1 safari version"
+      ]
+    }
   }
-}
-{
-  "name": "volleyball-score",
-  "version": "1.0.0",
-  "description": "volleyball-score",
-  "main": "server.js",
-  "scripts": {
-    "start": "nodemon server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "volleyball-score"
-  },
-  "author": "rei-san",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^16.4.1",
-    "express": "^4.18.2",
-    "helmet": "^7.1.0",
-    "mongoose": "^8.1.1",
-    "nodemon": "^3.0.3",
-    "uuid": "^9.0.1"
-  }
-}
+  
