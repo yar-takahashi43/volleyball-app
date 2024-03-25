@@ -1,0 +1,46 @@
+.top{
+    Background-color: #2c517c;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    top: 0;
+    position: sticky;
+    z-index: 100;
+    /* margin-top: 5px; */
+    margin-bottom: 5px;
+}
+
+.topBack,
+.topForward{
+    display: flex;
+}
+
+.topLeft,
+.topName,
+.topRight{
+    flex: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color: white;
+    cursor: pointer;
+    /* 以下menubarListの中身がホバーされたら凹む設定 */
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.name{
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+
+.topLeft:hover,
+.topRight:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}

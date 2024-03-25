@@ -1,0 +1,10 @@
+.Sidebar{
+    flex: 4px;
+    height: 100vh;
+    background-color: #f8fcff;
+}
+
+.sidebarWrapper{
+    padding: 20px;
+}
+

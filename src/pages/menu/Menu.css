@@ -1,0 +1,57 @@
+.menubar{
+    flex: 1;
+    height: 100vh;
+}
+
+.title{
+    margin: 80px 0 10px 50px;
+}
+
+/* marginは要検討 */
+.menubarWrapper{
+    padding: 0px;
+    margin: 0% 0%;
+}
+
+.menubarHr1{
+    margin-top: 0px;
+}
+
+.menubarList{
+    padding: 10px;
+    margin: 10px;
+    list-style: none;
+    align-items: center;
+}
+
+.menubarListItem{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 4px 6px;
+    cursor: pointer;
+    /* 以下menubarListの中身がホバーされたら凹む設定 */
+    box-shadow: 3px 7px 13px -10px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.menubarListItem:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}
+    /* 以上 */
+
+.menubarIcon{
+    font-size: 35px !important;
+    margin-right: 10px;
+}
+
+.menubarListItemText{
+    font-size: 20px;
+    padding-top: 3px;
+}
+
+.menubarHr2{
+    margin: 20px 0;
+}

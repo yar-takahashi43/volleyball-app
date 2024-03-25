@@ -1,0 +1,44 @@
+.memberContainer{
+    background-color: #f8fcff;
+    width: 100%;
+}
+
+.startingTitle,
+.benchTitle{
+    margin: 1% 0 0% 5%;
+    width: 300px;
+}
+
+.startingTable,
+.benchTable {
+  margin: 0% 0 2% 4%;
+  width: 300px;
+}
+
+.startingTable table,
+.benchTable  table {
+    border-collapse: collapse;
+    margin: 0% 0 0% 5%;
+    width: 300px;
+    /* width: 80%; */
+  }
+  
+.startingTable th,
+.startingTable td {
+    align-items: center;
+    text-align: center;
+    font-size: large;
+    border: 1px solid black;
+    padding: 10px;
+    /* width: 50px; */
+}
+
+.benchTable th,
+.benchTable td {
+    align-items: center;
+    text-align: center;
+    font-size: large;
+    border: 1px solid black;
+    padding: 10px;
+    /* width: 50px; */
+}

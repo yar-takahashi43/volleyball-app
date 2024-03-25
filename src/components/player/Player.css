@@ -1,0 +1,50 @@
+/* .playerListContainer{
+    padding: 10px;
+    margin: 10px;
+    list-style: none;
+    align-items: center;
+} */
+
+.eachplayer{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 25px;
+}
+
+.playerNum,
+.playerName,
+.playerNickname{
+    flex: 1;
+    text-align: left;
+}
+
+.changePlayer{
+    margin-right: 20px;
+}
+
+.deletePlayer,
+.updatePlayer{
+    font-size: 45px !important;
+    margin-right: 10px;
+    cursor: pointer;
+    /* 以下menubarListの中身がホバーされたら凹む設定 */
+    box-shadow: 3px 7px 13px -10px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.deletePlayer:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}
+
+.updatePlayer:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}
+
+.playerListText{
+    font-size: 20px !important;
+    /* padding-top: 3px; */
+}

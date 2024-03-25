@@ -1,0 +1,50 @@
+/* .opponentListContainer{
+    padding: 10px;
+    margin: 10px;
+    list-style: none;
+    align-items: center;
+} */
+
+.eachopponent{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 25px;
+}
+
+.opponentNum,
+.opponentName,
+.opponentNickname{
+    flex: 1;
+    text-align: left;
+}
+
+.changeOpponent{
+    margin-right: 20px;
+}
+
+.deleteOpponent,
+.updateOpponent{
+    font-size: 45px !important;
+    margin-right: 10px;
+    cursor: pointer;
+    /* 以下menubarListの中身がホバーされたら凹む設定 */
+    box-shadow: 3px 7px 13px -10px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.deleteOpponent:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}
+
+.updateOpponent:hover{
+    box-shadow: none;
+    transform: translateY(5px);
+}
+
+.opponentListText{
+    font-size: 20px !important;
+    /* padding-top: 3px; */
+}

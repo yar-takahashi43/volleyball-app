@@ -1,0 +1,70 @@
+
+.titleContainer {
+    /* 他のスタイル */
+    justify-content: space-between;
+    width: 90%;
+    padding: 0; /* パディングを0に設定 */
+  }
+  
+  .titleComponents {
+    /* 他のスタイル */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: space-around;
+    margin: 0% 5% 0 5%;
+  }
+  
+  .titleComponents table {
+    width: 100%;
+    border-collapse: collapse; /* テーブルのセル間の境界線を重ねる */
+}
+
+.titleComponentsHead th, .titleComponentsHead td {
+    padding: 0 !important; /* パディングを0に設定 */
+    margin: 0 !important; /* マージンを0に設定 */
+}
+
+  .titleComponentsHead {
+    /* 他のスタイル */
+    display: flex;
+    justify-content: space-between;
+  }
+  
+.headTitle{
+    font-size: 20px;
+}
+
+  /* テーブル全体を画面幅いっぱいに広げる */
+  .titleComponents table {
+    width: 100%;
+  }
+
+.serve, .reason, .score {
+  /* 他のスタイル */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  border: 1px solid black;
+}
+
+.titleComponentsHead td {
+  border-left: 1px solid grey; /* 項目間に縦線を追加 */
+  flex: 1;
+}
+
+.serve {
+  flex: 4;
+}
+
+.reason {
+  flex: 5;
+}
+
+.score {
+  flex: 3;
+}
+
+.first{
+  border-left: none !important;
+}
