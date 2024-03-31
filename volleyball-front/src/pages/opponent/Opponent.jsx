@@ -12,7 +12,7 @@ export default function Opponent({opponent}) {
                     名前：{opponent.name}
                 </span>
                 <span className="opponentNickname">
-                    表示名：{opponent.nickname}
+                    表示名：{opponent.label}
                 </span>
                 <div className="changeOpponent">
                    <PersonRemoveIcon className='deleteOpponent' htmlColor='green'/>

@@ -2,11 +2,6 @@ const mongoose = require("mongoose")
 
 const SetSchema = new mongoose.Schema(
     {
-        id: {
-            type: String,
-            unique: true,
-            require: true,
-        },
         myScore: {
             type: Number,
             default: 0,
@@ -15,11 +10,21 @@ const SetSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        starPlayer: [{
+            playerId: String,
+            num: String,
+            nickname: String,
+        }],        
+        benchMem: [{
+            playerId: String,
+            num: String,
+            nickname: String,
+        }],
         reception : {
-            A: {receptionNum: {type: Number, default: 0}},
-            B: {receptionNum: {type: Number, default: 0}},
-            C: {receptionNum: {type: Number, default: 0}},
-            D: {receptionNum: {type: Number, default: 0}}
+            A: {type: Number, default: 0},
+            B: {type: Number, default: 0},
+            C: {type: Number, default: 0},
+            D: {type: Number, default: 0},
         },
         spike : [
             {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},

@@ -1,52 +1,18 @@
 const router = require("express").Router()
 const Match = require("../models/Match")
-const Player = require("../models/Player")
-
-// 選手全員のIDを取得する
-async function getAllPlayerId(){
-    const players = await Player.find({}, '_id num nickname')
-    return players.map(player => ({
-        playerId: player._id,
-        num: player.num,
-        nickname: player.nickname
-    }))
-}
 
 // 新規試合登録
 router.post("/register", async (req, res) => {
     try {
-        const allPlayerId = await getAllPlayerId()
         const newMatch = new Match({
             opponentId: req.body.opponentId,
-            benchMem: allPlayerId
         });
         const savedMatch = await newMatch.save();
         res.status(200).json(savedMatch);
     } catch (err) {
-        console.error(err);
         res.status(500).json(err);
     }
 });
-
-// スターティングメンバー更新
-router.put("/:id/starPlayer", async (req, res) => {
-    try {
-        const match = await Match.findById(req.params.id);
-        if (!match) {
-            return res.status(404).json({ message: "Match not found" });
-        }
-
-        // ベンチメンバーから7人を選び、starPlayerに設定
-        match.starPlayer = match.benchMem.slice(0, 7);
-
-        const updatedMatch = await match.save();
-        return res.status(200).json(updatedMatch);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json(err);
-    }
-});
-
 
 // 試合削除
 router.delete("/:id", async (req, res) => {
@@ -58,8 +24,6 @@ router.delete("/:id", async (req, res) => {
         res.status(500).json(err);
     }
 });
-
-// スコア更新に関してはsetで行う。
 
 // 日付ごとに試合をフォルダにまとめて試合を実施した日時フォルダを取得
 router.get("/matches", async (req, res) => {

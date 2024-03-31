@@ -5,9 +5,9 @@ import Select from 'react-select';
 export default function ScoreDetail({
     setSetData, playerMap, currentScores,
     // 以下は新規で追加した部分。
-    myScore, 
-    incrementScore, decrementScore, myScoreChange,
-    currentMyScores, currentOpponentScores
+    adjustMyScore, adjustOpponentScore,
+    incrementScore, decrementScore, adjustScore,
+    currentMyScores, currentOpponentScores,
 }) {
 
   const optionAttack =[
@@ -38,42 +38,16 @@ const handleServeMemberChange = (selectedOption) => {
   }
 };
 
-// 　const handleAceChange = (e) => {
-//     setIsAce(e.target.checked); // エースのチェックボックスの状態を更新
-//     if (e.target.checked) {
-//       incrementScore("my");
-//     } else {
-//       decrementScore("my");
-//     }
-//     if (e.target.checked && isMiss) {
-//       decrementScore("opponent");
-//       setIsMiss(false); // エースが選択されていて、ミスも選択されている場合、ミスの選択を解除
-//     }
-//   };
-  
-//   const handleMissChange = (e) => {
-//     setIsMiss(e.target.checked); // ミスのチェックボックスの状態を更新
-//     if (e.target.checked) {
-//       incrementScore("opponent");
-//     } else {
-//       decrementScore("opponent");
-//     }
-//     if (e.target.checked && isAce) {
-//       decrementScore("my");
-//       setIsAce(false); // ミスが選択されていて、エースも選択されている場合、エースの選択を解除
-//     }
-//   };
-  
-const handleAceChange = (e) => {
+　const handleAceChange = (e) => {
     setIsAce(e.target.checked); // エースのチェックボックスの状態を更新
     if (e.target.checked) {
       incrementScore("my");
-      if (isMiss) {
-        myScoreChange("opponent", "my")
-        setIsAce(false)
-      } 
-    } else if (!e.target.checked) {
-        decrementScore("my")
+    } else {
+      decrementScore("my");
+    }
+    if (e.target.checked && isMiss) {
+      decrementScore("opponent");
+      setIsMiss(false); // エースが選択されていて、ミスも選択されている場合、ミスの選択を解除
     }
   };
   
@@ -81,10 +55,38 @@ const handleAceChange = (e) => {
     setIsMiss(e.target.checked); // ミスのチェックボックスの状態を更新
     if (e.target.checked) {
       incrementScore("opponent");
-    } else if (!e.target.checked) {
-        decrementScore("opponent")
+    } else {
+      decrementScore("opponent");
+    }
+    if (e.target.checked && isAce) {
+      decrementScore("my");
+      setIsAce(false); // ミスが選択されていて、エースも選択されている場合、エースの選択を解除
     }
   };
+
+// const handleAceChange = (e) => {
+//     setIsAce(e.target.checked); // エースのチェックボックスの状態を更新
+//     incrementScore("my");
+//     if (!e.target.checked) {
+//       decrementScore("my")
+//     } else if (e.target.checked && isMiss) {
+//       adjustScore("opponent", "my")
+//       // adjustMyScore("opponent", "my")
+//       setIsMiss(false)
+//     }
+//   };
+  
+//   const handleMissChange = (e) => {
+//     setIsMiss(e.target.checked);
+//     incrementScore("opponent");
+//     if (!e.target.checked) {
+//       decrementScore("opponent")
+//     } else if (e.target.checked && isAce) {
+//       adjustScore("my", "opponent")
+//       // adjustOpponentScore("my", "opponent")
+//       setIsAce(false)
+//     }
+//   };
   
 
   // サーブ以外の実装

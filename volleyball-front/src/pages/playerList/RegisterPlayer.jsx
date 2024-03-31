@@ -11,9 +11,21 @@ export default function RegisterPlayer() {
         </div>   
         <div className="registerBox">
             <p className="registerMsg">※表示名にはニックネームを入れる</p>
-            <input type="text" className="registerInput" placeholder='背番号' />
-            <input type="text" className="registerInput" placeholder='選手名' />
-            <input type="text" className="registerInput" placeholder='表示名' />
+            <input 
+              type="text" 
+              className="registerInput" 
+              placeholder='背番号' 
+            />
+            <input 
+              type="text" 
+              className="registerInput" 
+              placeholder='選手名' 
+            />
+            <input 
+              type="text" 
+              className="registerInput" 
+              placeholder='表示名' 
+            />
             <button className="registerButton">登録</button>
         </div>
     </div>
