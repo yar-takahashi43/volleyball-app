@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useMemo } from 'react'
 import "./Reception.css"
+import axios from 'axios'
 
-export default function Reception({reception, addReception, setAddReception, minusReception, setMinusReception}) {
+export default function Reception({
+    reception, setReception, setId, matchId
+}) {
     const Column = [
         {
             header: "評価",
@@ -15,19 +18,43 @@ export default function Reception({reception, addReception, setAddReception, min
     ]
 
     const columns = useMemo(() => Column, []);
-    const data = useMemo(() => reception, []);
+    const data = useMemo(() => 
+        Object.entries(reception).map(([key, value]) => (
+            {receptionId: key, receptionNum: value}
+            )), [reception]);
 
     const addRecep = (index) => {
       let newData = [...data];
       newData[index].receptionNum += 1;
-      setAddReception(newData);
+    //   setReception(newData);
+      setReception(prevState => (
+        {...prevState, [newData[index].receptionId]: newData[index].receptionNum}));
     };
 
     const minusRecep =(index) => {
       let newData = [...data];
-      newData[index].receptionNum -= 1;
-      setMinusReception(newData);
+      if (newData[index].receptionNum > 0 ){
+        newData[index].receptionNum -= 1
+        //   setReception(newData);
+        setReception(prevState => (
+            {...prevState, [newData[index].receptionId]: 
+                newData[index].receptionNum}))  
+      }
     }
+
+    useEffect(() => {
+        const updateReception = async () => {
+            try {
+                await axios.put(`/set/match/${matchId}/set/${setId}/reception`, 
+                {
+                    reception
+                })
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        updateReception()
+    } , [reception])
 
   return (
     <div className='receptionContainer'>
@@ -51,6 +78,7 @@ export default function Reception({reception, addReception, setAddReception, min
                             <button 
                                 className='minusReception'
                                 onClick={() => minusRecep(index)}
+                                // disabled={row.receptionNum === 0}
                             >-
                             </button>
                             {row.receptionNum}

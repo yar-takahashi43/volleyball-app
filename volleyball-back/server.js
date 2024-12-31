@@ -1,4 +1,5 @@
 const express = require("express")
+const cors = require("cors")
 const app = express()
 const userRouter = require("./routes/users")
 const authRouter = require("./routes/auth")
@@ -21,6 +22,7 @@ mongoose
     })
 
 //ミドルウェアのルーティング設定
+app.use(cors())
 app.use(express.json())
 app.use("/api/users", userRouter)
 app.use("/api/auth", authRouter)

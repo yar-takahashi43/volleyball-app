@@ -1,35 +1,68 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import "./Score.css"
 import Topbar from '../../components/topbar/Topbar'
 import Sidebar from '../../components/sidebar/Sidebar'
-import { Opponents, Players, Matches } from '../../dummyData'
+// import { Opponents} from '../../dummyData'
+import { Players, Matches } from '../../dummyData'
 import Gamebar from '../../components/game/Gamebar'
+import axios from 'axios'
 
-export default function Score({match, setMatch}) {
-    // 相手データを保持する。
-    const [opponent, setOpponent] = useState(Opponents)
-    
-    // 試合IDを定める。
-    const [matchId, setMatchId] = useState(1)
-    const matchData = matchId ? match.find(match => match.matchId === matchId) : null
-    // 試合のデータを使用してTableコンポーネントをレンダリング
-    //   return <Table actions={matchData.sets[0].actions} />;
+export default function Score({
+    match, setMatch, 
+    id, selectedSetId, setSeletedSetId,
+    start, setStart,
+    bench, setBench,
+    opponent, setOpponent
+}) {
+    // const [opponent, setOpponent] = useState([])
+    const [selectedSet, setSelectedSet] = useState(null)
 
-    console.log(Array.isArray(Opponents));
-    console.log(Array.isArray(opponent));
+    // useEffect(() => {
+    //     const fetchOpponents = async() => {
+    //       try {
+    //         const res = await axios.get("/opponent/opponents")
+    //         setOpponent(res.data)
+    //       } catch(err) {
+    //         console.error(err)
+    //       }
+    //     }
+    //   fetchOpponents()
+    // }, [])
+
+    useEffect(() => {
+      if (match && selectedSetId) {
+          setSelectedSet(match.sets.find(set => set._id === selectedSetId))
+      }
+    }, [match, selectedSetId])
 
   return (
     <>
-        <Topbar opponent={opponent} key={opponent.id} setOpponent={setOpponent} />
+        <Topbar 
+            match={match} 
+            opponent={opponent} 
+            key={opponent ? opponent.id : 'default-key'} 
+            setOpponent={setOpponent}
+            setId={selectedSetId}
+            setSetId={setSeletedSetId}
+        />
         <div className="scoreContainer">
             <Sidebar 
-                match={matchData}
-                key={matchId.id} 
-                // playerData={getPlayerData}
-                />
+                match={match}
+                matchId={match ? match._id : 'default-key'}
+                setId={selectedSetId}
+                start={start}
+                setStart={setStart}
+                bench={bench}
+                setBench={setBench}
+            />
             <Gamebar 
-                matchData={matchData}
-                key={matchId.id}
+                match={match}
+                matchId={match ? match._id : 'default-key'}
+                setId={selectedSetId}
+                start={start}
+                setStart={setStart}
+                bench={bench}
+                setBench={setBench}
             />
         </div>
     </>

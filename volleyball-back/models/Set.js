@@ -11,14 +11,14 @@ const SetSchema = new mongoose.Schema(
             default: 0,
         },
         starPlayer: [{
-            playerId: String,
-            num: String,
-            nickname: String,
-        }],        
+            playerId: {type: String},
+            num: {type: String},
+            nickname: {type: String},
+        }],    
         benchMem: [{
-            playerId: String,
-            num: String,
-            nickname: String,
+            playerId: {type: String},
+            num: {type: String},
+            nickname: {type: String},
         }],
         reception : {
             A: {type: Number, default: 0},
@@ -33,11 +33,7 @@ const SetSchema = new mongoose.Schema(
             {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
             {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}}
         ],
-        actions: {
-            type: Array,
-            default: [],
-            min: 0,
-            max: 45,
+        actions: [{
             _id: {
                 type: String,
                 unique: true,
@@ -54,14 +50,6 @@ const SetSchema = new mongoose.Schema(
                     enum: ['ace', 'miss', 'null'],
                     default: null,
                 },
-                // isAce: {
-                //     type: Boolean,
-                //     default: false,
-                // },
-                // isMiss: {
-                //     type: Boolean,
-                //     default: false,
-                // },
                 score: {
                     type: Number,
                     default: 0,
@@ -89,7 +77,6 @@ const SetSchema = new mongoose.Schema(
                 }
             },
             score: {
-                type: Array,
                 my: {
                     type: Number,
                     default: 0,
@@ -101,7 +88,8 @@ const SetSchema = new mongoose.Schema(
                     min: 0
                 }
             }
-        }
+        }]
+        
     }
 )
 

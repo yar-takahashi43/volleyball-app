@@ -11,28 +11,19 @@
 
 .startingTable,
 .benchTable {
-  margin: 0% 0 2% 4%;
+  margin: 0% 0 2% 0;
   width: 300px;
-}
+} 
 
 .startingTable table,
 .benchTable  table {
     border-collapse: collapse;
     margin: 0% 0 0% 5%;
-    width: 300px;
-    /* width: 80%; */
-  }
+    width: 100%; /* 幅を最大化 */
+}
   
 .startingTable th,
-.startingTable td {
-    align-items: center;
-    text-align: center;
-    font-size: large;
-    border: 1px solid black;
-    padding: 10px;
-    /* width: 50px; */
-}
-
+.startingTable td,
 .benchTable th,
 .benchTable td {
     align-items: center;
@@ -40,5 +31,6 @@
     font-size: large;
     border: 1px solid black;
     padding: 10px;
-    /* width: 50px; */
+    white-space: nowrap; /* テキストの折り返しを防ぐ */
 }
+  

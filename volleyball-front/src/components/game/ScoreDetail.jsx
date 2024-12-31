@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import './ScoreDetail.css';
 import Select from 'react-select';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function ScoreDetail({
     setSetData, playerMap, currentScores,
-    // 以下は新規で追加した部分。
-    adjustMyScore, adjustOpponentScore,
-    incrementScore, decrementScore, adjustScore,
+    incrementScore, decrementScore,
     currentMyScores, currentOpponentScores,
+    // uuidに関するもの
+    // onNewAction
 }) {
 
   const optionAttack =[
@@ -38,6 +39,22 @@ const handleServeMemberChange = (selectedOption) => {
   }
 };
 
+// const handleScoreChange = (selectedOption, scoreType, isAceOrMiss) => {
+//   if (selectedOption && !scoreUpdated) {
+//     const increment = scoreType === 'attack' ? incrementScore : decrementScore;
+//     increment('my');
+//     setScoreUpdated(true);
+
+//     const newAction = {
+//       _id: uuidv4(),
+//       player: selectedPlayer,
+//       type: selectedOption.label,
+//       isAceOrMiss: isAceOrMiss,
+//     };
+//     onNewAction(newAction); // 新しいアクションを親コンポーネントに送信
+//   }
+// }
+
 　const handleAceChange = (e) => {
     setIsAce(e.target.checked); // エースのチェックボックスの状態を更新
     if (e.target.checked) {
@@ -64,31 +81,6 @@ const handleServeMemberChange = (selectedOption) => {
     }
   };
 
-// const handleAceChange = (e) => {
-//     setIsAce(e.target.checked); // エースのチェックボックスの状態を更新
-//     incrementScore("my");
-//     if (!e.target.checked) {
-//       decrementScore("my")
-//     } else if (e.target.checked && isMiss) {
-//       adjustScore("opponent", "my")
-//       // adjustMyScore("opponent", "my")
-//       setIsMiss(false)
-//     }
-//   };
-  
-//   const handleMissChange = (e) => {
-//     setIsMiss(e.target.checked);
-//     incrementScore("opponent");
-//     if (!e.target.checked) {
-//       decrementScore("opponent")
-//     } else if (e.target.checked && isAce) {
-//       adjustScore("my", "opponent")
-//       // adjustOpponentScore("my", "opponent")
-//       setIsAce(false)
-//     }
-//   };
-  
-
   // サーブ以外の実装
   const [selectedPlayer, setSelectedPlayer] = useState(null); // 選択された選手の状態を管理するためのstateを作成
   const [attackSelected, setAttackSelected] = useState(optionAttack)
@@ -96,41 +88,78 @@ const handleServeMemberChange = (selectedOption) => {
 
   const handleAttackChange = (selectedOption) => {
     if (selectedOption && !scoreUpdated) {
-      setPrevMyTeamScore(myTeamScore)
-      setMyTeamScore(myTeamScore + 1);
-      setScoreUpdated(true); // スコアが更新されたことを記録
+      incrementScore('my'); // incrementScore関数を使用
+      setScoreUpdated(true);
     }
     setAttackSelected(selectedOption);
     if (selectedOption) {
-      setLoseSelected(null); // 得点が選択されたら失点の選択を解除
+      setLoseSelected(null);
     } else {
       setAttackSelected(null);
-      setLoseSelected(null); // 得点の選択が解除されたら失点の選択も解除
+      setLoseSelected(null);
       if (scoreUpdated) {
-        setMyTeamScore(prevMyTeamScore); // 選択が解除されたらスコアをデクリメント
-        setScoreUpdated(false); // スコアの更新状態をリセット
+        decrementScore('my'); // decrementScore関数を使用
+        setScoreUpdated(false);
       }
     }
   };
-
+  
   const handleLoseChange = (selectedOption) => {
     if (selectedOption && !scoreUpdated) {
-      setPrevOpponentScore(opponentScore)
-      setOpponentScore(opponentScore + 1);
-      setScoreUpdated(true); // スコアが更新されたことを記録
+      incrementScore('opponent'); // incrementScore関数を使用
+      setScoreUpdated(true);
     }
     setLoseSelected(selectedOption);
     if (selectedOption) {
-      setAttackSelected(null); // 失点が選択されたら得点の選択を解除
+      setAttackSelected(null);
     } else {
       setLoseSelected(null);
-      setAttackSelected(null); // 失点の選択が解除されたら得点の選択も解除
+      setAttackSelected(null);
       if (scoreUpdated) {
-        setOpponentScore(prevOpponentScore); // 選択が解除されたらスコアをデクリメント
-        setScoreUpdated(false); // スコアの更新状態をリセット
+        decrementScore('opponent'); // decrementScore関数を使用
+        setScoreUpdated(false);
       }
     }
   };
+  
+
+  // const handleAttackChange = (selectedOption) => {
+  //   if (selectedOption && !scoreUpdated) {
+  //     setPrevMyTeamScore(myTeamScore)
+  //     setMyTeamScore(myTeamScore + 1);
+  //     setScoreUpdated(true); // スコアが更新されたことを記録
+  //   }
+  //   setAttackSelected(selectedOption);
+  //   if (selectedOption) {
+  //     setLoseSelected(null); // 得点が選択されたら失点の選択を解除
+  //   } else {
+  //     setAttackSelected(null);
+  //     setLoseSelected(null); // 得点の選択が解除されたら失点の選択も解除
+  //     if (scoreUpdated) {
+  //       setMyTeamScore(prevMyTeamScore); // 選択が解除されたらスコアをデクリメント
+  //       setScoreUpdated(false); // スコアの更新状態をリセット
+  //     }
+  //   }
+  // };
+
+  // const handleLoseChange = (selectedOption) => {
+  //   if (selectedOption && !scoreUpdated) {
+  //     setPrevOpponentScore(opponentScore)
+  //     setOpponentScore(opponentScore + 1);
+  //     setScoreUpdated(true); // スコアが更新されたことを記録
+  //   }
+  //   setLoseSelected(selectedOption);
+  //   if (selectedOption) {
+  //     setAttackSelected(null); // 失点が選択されたら得点の選択を解除
+  //   } else {
+  //     setLoseSelected(null);
+  //     setAttackSelected(null); // 失点の選択が解除されたら得点の選択も解除
+  //     if (scoreUpdated) {
+  //       setOpponentScore(prevOpponentScore); // 選択が解除されたらスコアをデクリメント
+  //       setScoreUpdated(false); // スコアの更新状態をリセット
+  //     }
+  //   }
+  // };
 
   // スコアに関して処理
   const [myTeamScore, setMyTeamScore] = useState(0)

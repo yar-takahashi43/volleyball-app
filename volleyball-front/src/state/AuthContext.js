@@ -1,19 +1,26 @@
-import { Children, createContext, useReducer } from "react";
+import { Children, createContext, useReducer, useEffect } from "react";
 import AuthReducer from "./AuthReducer";
 
 // 最初のユーザー状態の定義
 const initialState = {
-    user: null,
-    isFetching: false,
-    error: false,
-}
+    user: JSON.parse(localStorage.getItem("user")) || null,
+    isFetching: false, //ログインしようともしてないですね。
+    error: false, //エラーも吐いてないですね。
+};
 
 //状態をグローバルに管理する
 // 初期値のユーザー状態をどこでも使えるようにする
 export const AuthContext = createContext(initialState)
 
-export const AuthContextProvider = ({children}) => {
-    const [state, dispatch] = useReducer(AuthReducer, initialState)
+export const AuthContextProvider = ({ children }) => {
+    //ユーザー入力によって状態(state)が更新され、それをグローバルに利用している。
+    const [state, dispatch] = useReducer(AuthReducer, initialState);
+  
+    //set user data in localstroge
+    useEffect(() => {
+      localStorage.setItem("user", JSON.stringify(state.user));
+    }, [state.user]);
+
     return (
         <AuthContext.Provider
             value={{

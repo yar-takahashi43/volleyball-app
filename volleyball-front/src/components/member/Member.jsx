@@ -1,17 +1,26 @@
-import React from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import { useMemo } from 'react'
-import { Players } from '../../dummyData'
+// import { Players } from '../../dummyData'
 import "./Member.css"
+import axios from 'axios'
+import Select from 'react-select';
 // import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
-export default function Member({member}) {
+export default function Member({
+    member, matchId, setId,
+    start, setStart, bench, setBench
+}) {
     const ColumnStarting = [
         {
-            header: "サーブ順",
+            header: "削除",
+            accessorKey: "button",
+        },
+        {
+            header: "サーブ",
             accessorKey: "serveId",
         },
         {
-            header: "背番号",
+            header: "番号",
             accessorKey: "playerId",
         },
         {
@@ -22,7 +31,11 @@ export default function Member({member}) {
 
     const ColumnBench = [
         {
-            header: "背番号",
+            header: "追加",
+            accessorKey: "playerId",
+        },
+        {
+            header: "番号",
             accessorKey: "playerId",
         },
         {
@@ -31,23 +44,72 @@ export default function Member({member}) {
         },
     ]
 
-    // サーブ順のデータ
     const serveOrder = [1, 2, 3, 4, 5, 6, "L"];
+    const [selectedPlayer, setSeletedPlayer] = useState(null)
 
     const columns1 = useMemo(() => ColumnStarting, []);
     const columns2 = useMemo(() => ColumnBench, []);
-    const start = useMemo(() => member.starPlayer, []);
-    const bench = useMemo(() => member.benchMem, []);
+    // const startingPlayers = useMemo(() => start ||[], [start]);
+    // const benchPlayers = useMemo(() => member.benchMem || [], [member]);
 
-    // const onDragEnd =(result) =>{
-    //     const remove = items.splice(result.source.index, 1);
-    //     console.log(remove)
-    //     items.splice(result.destination.index, 0, remove[0])
+    // const updatePlayerStatus = async () => {
+    //     try {
+    //         await axios.put(`/set/match/${matchId}/set/${setId}/starPlayer`, 
+    //         {
+    //             starPlayerId: start,
+    //             benchMemId: bench
+    //         })
+    //     } catch (err) {
+    //         console.error(err)
+    //     }
     // }
+
+    const handlePlayerChange = (selectedOption) => {
+        const player = start.find(player => player.playerId.toString() === selectedOption.value) || 
+        bench.find(player => player.playerId.toString() === selectedOption.value);
+        setSeletedPlayer(player);
+    }
+    
+    useEffect(() => {
+        if (selectedPlayer && selectedPlayer.playerId) {
+            const playerId = selectedPlayer.playerId.toString()
+            const isStarting = start.some(player => player.playerId.toString() === playerId)
+            if (!isStarting && start.length >= 7) {
+                // 先発メンバーがすでに7名いる場合は何もしない
+                return;
+            }
+            const playerToMove = start.find(player => player.playerId.toString() === playerId);
+            const newBench = isStarting ? 
+                [...bench.filter(player => player.playerId.toString() !== playerId), ...(playerToMove ? [playerToMove] : [])] :
+                bench.filter(player => player.playerId.toString() !== playerId);
+            const newStart = isStarting ? 
+                start.filter(player => player.playerId.toString() !== playerId) :
+                [...start.filter(player => player.playerId.toString() !== playerId), ...(bench.find(player => player.playerId.toString() === playerId) ? [bench.find(player => player.playerId.toString() === playerId)] : [])]
+            setBench(newBench)
+            setStart(newStart)
+            setSeletedPlayer(null)
+        }
+
+        let queue = Promise.resolve()
+    
+        const updatePlayerStatus = () => {
+            queue = queue.then(async() => {
+                try {
+                    await axios.put(`/set/match/${matchId}/set/${setId}/starPlayer`, 
+                    {
+                        starPlayerId: start,
+                        benchMemId: bench
+                    })
+                } catch (err) {
+                    console.error(err)
+                }
+            })
+        }
+        updatePlayerStatus()
+    }, [selectedPlayer])
 
     return (
     <div className='memberContainer'>
-        {/* <DragDropContext onDragEnd={onDragEnd}> */}
         <div className="startingTitle">
             <h3>スターティング</h3>
         </div>
@@ -61,18 +123,21 @@ export default function Member({member}) {
                 </tr>
             </thead>
             <tbody>
-                {start.map((row1, index) => {
-                    // row.playerIdに対応する選手のデータをPlayersから検索
-                    const player = Players.find((player) => player.id === row1.playerId);
-                    return (
+            {start && start.length >= 0 && start.map((player, index) => {
+                return (
                     <tr key={index}>
-                        <td>{serveOrder[index]}</td>  {/* サーブ順を表示 */}
-                        <td>{player ? player.num : '-'}</td>  {/* 選手が見つかった場合はその背番号を表示し、見つからなかった場合は'-'を表示 */}
+                        <td>
+                            <button onClick={() => handlePlayerChange({value: player.playerId, label: player.nickname})}>
+                            ベンチへ
+                            </button>
+                        </td>
+                        <td>{serveOrder[index]}</td>
+                        <td>{player ? player.num : '-'}</td>
                         <td>{player ? player.nickname : '-'}</td>
                     </tr>
-                    );
-                })}
-            </tbody>
+                );
+            })}
+        </tbody>
         </table>
         </div>
 
@@ -89,12 +154,15 @@ export default function Member({member}) {
                 </tr>
             </thead>
             <tbody>
-                {bench.map((row2, index2) => {
-                    // row.playerIdに対応する選手のデータをPlayersから検索
-                    const player = Players.find((player) => player.id === row2.playerId);
+                {bench && bench.length >= 0 && bench.map((player, index) => {
                     return (
-                    <tr key={index2}>
-                        <td>{player ? player.num : '-'}</td>  {/* 選手が見つかった場合はその背番号を表示し、見つからなかった場合は'-'を表示 */}
+                    <tr key={index}>
+                        <td>
+                            <button onClick={() => handlePlayerChange({value: player.playerId, label: player.nickname})}>
+                            先発に追加
+                            </button>
+                        </td>
+                        <td>{player ? player.num : '-'}</td>
                         <td>{player ? player.nickname : '-'}</td>
                     </tr>
                     );
@@ -102,7 +170,6 @@ export default function Member({member}) {
             </tbody>
         </table>
         </div>
-        {/* </DragDropContext> */}
     </div>
     )
     }

@@ -14,23 +14,29 @@ import PlayerDetails from "./pages/playerList/PlayerDetails";
 import OpponentDetails from "./pages/opponent/OpponentDetails";
 import { useContext } from "react";
 import { AuthContext } from "./state/AuthContext";
+import MatchListByDate from "./pages/match/MatchListByDate";
 
 function App() {
   const {user} = useContext(AuthContext)
 
+  // 全体的にRouteのurlはバックエンドと合わせる。
   return (
     <Router>
       <Routes>
         <Route path="/" element={ user ? <Menu /> : <Register/>} />
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to="/"/> : <Register/>}/>
+
         <Route path="/gamelist" element={<MatchList />}/>
-        <Route path="/newgame" element={<Match />}/>
+        <Route path="/gamelist/date" element={<MatchListByDate />}/>
+        <Route path="/match/:id" element={<Match />}/>
+
         <Route path="/playerlist" element={<PlayerList />}/>
-        {/* <Route path="/playerlist/sawamura" element={<PlayerDetails />}/> */}
         <Route path="/playerRegister" element={<RegisterPlayer />}/>
+
         <Route path="/opponentRegister" element={<RegisterOpponent/>}/>
         <Route path="/opponentlist" element={<OpponentList/>}/>
+        {/* <Route path="/playerlist/sawamura" element={<PlayerDetails />}/> */}
         {/* <Route path="/opponentlist/karasuno" element={<OpponentDetails />}/> */}
       </Routes>
     </Router>

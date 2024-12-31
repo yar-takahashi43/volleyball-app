@@ -5,7 +5,7 @@ const MatchSchema = new mongoose.Schema(
     {
         opponentId: {
             type: String,
-            required: true,
+            required: false,
         },
         result:{
             type: Boolean,

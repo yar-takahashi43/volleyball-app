@@ -4,6 +4,12 @@ const Player = require("../models/Player")
 //選手の登録
 router.post("/register", async (req, res) => {
     try{
+        // Check if the number is already in use
+        const existingPlayer = await Player.findOne({ num: req.body.num });
+        if (existingPlayer) {
+            return res.status(400).json("この背番号はすでに使用されています。");
+        }
+
         const newPlayer = await new Player({
             num: req.body.num,
             name: req.body.name,
@@ -16,6 +22,7 @@ router.post("/register", async (req, res) => {
         return res.status(500).json(err)
     }
 })
+
 
 //選手一覧取得
 router.get("/players", async(req, res) => {

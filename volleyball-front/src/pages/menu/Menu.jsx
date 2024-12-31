@@ -3,11 +3,38 @@ import SportsVolleyballIcon from '@mui/icons-material/SportsVolleyball';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import AddCommentIcon from '@mui/icons-material/AddComment';
-import React from 'react'
+import React, { useState } from 'react'
 import "./Menu.css"
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios';
 
 export default function Menu() {
+    // 新規試合がクリックされたら試合の雛形を作成する。
+    const [newMatchId, setNewMatchId] = useState(null)
+    const navigate = useNavigate()
+
+    const registerMatch = async() => {
+        try{
+            const defaultOpponentId = 'dummyId'
+            // const res = await axios.post("match/register", {opponentId: defaultOpponentId})
+            const res = await axios.post("match/register")
+            return res.data;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+    
+    const handleNewMatch = async() => {
+        const newMatch = await registerMatch();
+        if (newMatch) {
+            setNewMatchId(newMatch._id);
+            navigate(`/match/${newMatch._id}`)
+        } else {
+            console.error("エラーが発生しました。")
+        }
+    };
+
   return (
     <div className='menubar'>
         <h2 className="title">メニュー</h2>
@@ -16,7 +43,10 @@ export default function Menu() {
             <ul className="menubarList">
                 <li className="menubarListItem">
                     <SportsVolleyballIcon className='menubarIcon'/>
-                    <Link to="/newgame" style={{textDecoration: 'none', color: 'black'}}>
+                    <Link 
+                        to={newMatchId ? `/match/${newMatchId}` : '#'} 
+                        onClick={handleNewMatch} 
+                        style={{textDecoration: 'none', color: 'black'}}>
                         <span className="menubarListItemText">新規試合</span>
                     </Link>
                 </li>
