@@ -7,7 +7,7 @@ const opponentRouter = require("./routes/opponent")
 const matchRouter = require("./routes/match")
 const playerRouter = require("./routes/player")
 const setRouter = require("./routes/set")
-const PORT = 5000
+const PORT = 5001
 const mongoose = require("mongoose")
 require("dotenv").config()
 
