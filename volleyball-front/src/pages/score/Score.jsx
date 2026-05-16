@@ -5,11 +5,11 @@ import Sidebar from '../../components/sidebar/Sidebar'
 // import { Opponents} from '../../dummyData'
 import { Players, Matches } from '../../dummyData'
 import Gamebar from '../../components/game/Gamebar'
-import axios from 'axios'
+import api from '../../Api';
 
 export default function Score({
     match, setMatch, 
-    id, selectedSetId, setSeletedSetId,
+    id, selectedSetId, setSelectedSetId,
     start, setStart,
     bench, setBench,
     opponent, setOpponent
@@ -20,7 +20,7 @@ export default function Score({
     // useEffect(() => {
     //     const fetchOpponents = async() => {
     //       try {
-    //         const res = await axios.get("/opponent/opponents")
+    //         const res = await api.get("/opponent/opponents")
     //         setOpponent(res.data)
     //       } catch(err) {
     //         console.error(err)
@@ -43,7 +43,7 @@ export default function Score({
             key={opponent ? opponent.id : 'default-key'} 
             setOpponent={setOpponent}
             setId={selectedSetId}
-            setSetId={setSeletedSetId}
+            setSetId={setSelectedSetId}
         />
         <div className="scoreContainer">
             <Sidebar 

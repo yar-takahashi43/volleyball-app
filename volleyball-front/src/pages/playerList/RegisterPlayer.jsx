@@ -2,24 +2,25 @@ import React, {useState} from 'react'
 import "./RegisterPlayer.css"
 import "../home/Container.css"
 import RegisterPlayerTop from "./PlayerRegisterTop"
-import axios from 'axios';
+import api from '../../Api';
+import { useFlashMessage } from '../../hooks/useFlashMessage';
 
 export default function RegisterPlayer() {
   const [num, setNum] = useState("");
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("")
-  const [message, setMessage] = useState("")
+  const {message, showMessage} = useFlashMessage(2000)
 
   const registerPlayer = async() => {
     try{
-      const res = await axios.post("player/register", {
+      await api.post("player/register", {
         num,
         name,
         nickname
       })
-      setMessage("登録が完了しました！")
+      showMessage("登録が完了しました！")
     } catch(err) {
-      setMessage("登録に失敗しました。背番号、名前、表示名のいずれかが既に使われています。")
+      showMessage("登録に失敗しました。背番号、名前、表示名のいずれかが既に使われています。")
     }
   }
 

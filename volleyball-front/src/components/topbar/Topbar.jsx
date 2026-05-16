@@ -8,7 +8,7 @@ import Select from 'react-select';
 import { render } from '@testing-library/react';
 // import { Opponents } from '../../dummyData'
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../Api';
 
 export default function Topbar({match, opponent, setOpponent, setId, setSetId}) {
     const[updateOpponent, setUpdatedOpponent] = useState(false)
@@ -28,7 +28,7 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
     useEffect(() => {
         const fetchOpponent = async () => {
             try {
-                const res = await axios.get(`/match/${match._id}`);
+                const res = await api.get(`/match/${match._id}`);
                 const fetchedMatch = res.data;
                 const selectedOpponentId = opponent.find(opp => opp._id === fetchedMatch.opponentId);
                 setSelectedOpponent(selectedOpponentId);
@@ -43,7 +43,7 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
         if (selectedOpponent) {
             const updateOpponent = async () => {
                 try {
-                    await axios.put(`/match/${match._id}`, { opponentId: selectedOpponent._id });
+                    await api.put(`/match/${match._id}`, { opponentId: selectedOpponent._id });
                     console.log("対戦相手を選択しました。");
                     // setSelectedOpponent(null)
                 } catch (err) {
@@ -64,7 +64,7 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
     useEffect(() => {
         const fetchNewSet = async () => {
           try {
-            const res = await axios.get(`/set/match/${match._id}/set/${setId}`);
+            const res = await api.get(`/set/match/${match._id}/set/${setId}`);
             setNewSet(res.data);
           } catch (err) {
             console.error(err);
@@ -78,10 +78,9 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
         setSetId(match.sets[selectedOption.value - 1]._id)
     }
 
-    console.log(match)
     const addSet = async() => {
         try{
-            const res = await axios.post(`/set/match/${match._id}`)
+            const res = await api.post(`/set/match/${match._id}`)
             return res.data
         } catch (err){
             console.error(err)

@@ -1,19 +1,30 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import "./Opponent.css"
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import ReplayCircleFilledIcon from '@mui/icons-material/ReplayCircleFilled';
-import axios from 'axios';
+import api from '../../Api';
 
-export default function Opponent({opponent}) {
+export default function Opponent({opponent, onDelete, onUpdate}) {
     
   const[popup, setPopup] = useState(false)
   const[updatePopup, setUpdatePopup] = useState(false)
-  const[updatedOpponent, setUpdatedOpponent] = useState(false)
+  const[updatedOpponent, setUpdatedOpponent] = useState({
+    name: opponent.name,
+    label: opponent.label
+  })
+  useEffect(() => {
+    setUpdatedOpponent({
+      name: opponent.name,
+      label: opponent.label
+    });
+  }, [opponent]);
+
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`opponent/${opponent._id}`)
-      console.log("削除が完了しました。")
+      await api.delete(`opponent/${opponent._id}`)
+      // 親に削除依頼を渡す
+      onDelete(opponent._id)
     } catch (err) {
       console.log("削除中にエラーが発生しました。" ,err)
     }
@@ -22,8 +33,9 @@ export default function Opponent({opponent}) {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`opponent/${opponent._id}`, updatedOpponent)
-      console.log("更新が完了しました。")
+      const res = await api.put(`opponent/${opponent._id}`, updatedOpponent)
+      // 更新後を親に渡す
+      onUpdate(res.data)
     } catch (err) {
       console.log("更新中にエラーが発生しました。" ,err)
     }
