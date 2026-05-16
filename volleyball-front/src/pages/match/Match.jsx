@@ -2,7 +2,7 @@ import React from 'react'
 import Score from '../score/Score';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../Api';
 
 export default function Match() {
 
@@ -13,14 +13,15 @@ export default function Match() {
     const [start, setStart] = useState([])
     const [bench, setBench] = useState([])
     const [opponent, setOpponent] = useState([])
+    // const currentSet = match.sets[selectedSetId]
 
   useEffect(() => {
       const fetchMatch = async () => {
           try {
-              const res = await axios.get(`/match/${matchId}`);
+              const res = await api.get(`/match/${matchId}`);
               const match = res.data
               const sets = await Promise.all(match.sets.map(async setId =>{
-                const setRes = await axios.get(`/set/match/${matchId}/set/${setId}`)
+                const setRes = await api.get(`/set/match/${matchId}/set/${setId}`)
                 return setRes.data
               }))
               match.sets = sets
@@ -38,7 +39,7 @@ export default function Match() {
   useEffect(() => {
     const fetchOpponents = async() => {
       try {
-        const res = await axios.get("/opponent/opponents")
+        const res = await api.get("/opponent/opponents")
         setOpponent(res.data)
       } catch(err) {
         console.error(err)
@@ -47,13 +48,15 @@ export default function Match() {
   fetchOpponents()
   }, [])
   
+  if (!match) return <div>Loading...</div>;
+  const currentSet = match.sets.find(s => s._id === selectedSetId);
 
   return (
     <div>
         {/* {match && <Score match={match} setMatch={setMatch} id={matchId} />} */}
-        {match && match.sets.map((set, index) => (
+        {/* {match && match.sets.map((set, index) => ( */}
+        {match &&  (
           <Score 
-            key={index} 
             match={match}
             setMatch={setMatch} 
             id={matchId}
@@ -66,7 +69,7 @@ export default function Match() {
             opponent={opponent}
             setOpponent={setOpponent}
           />
-          ))}
+          )}
     </div>
   )
 }

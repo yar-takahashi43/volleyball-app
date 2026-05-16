@@ -2,22 +2,24 @@ import React, {useState} from 'react'
 import "./RegisterOpponent.css"
 import "../home/Container.css"
 import RegisterOpponentTop from "./RegisterOpponentTop"
-import axios from 'axios'
+import {useFlashMessage} from "../../hooks/useFlashMessage"
+import api from '../../Api';
 
 export default function RegisterOpponent() {
     const [name, setName] = useState("");
     const [label, setLabel] = useState("")
-    const [message, setMessage] = useState("")
+    // const [message, showMessage] = useState("")
+    const {message, showMessage} = useFlashMessage(2000)
 
     const registerOpponent = async() => {
         try{
-            const res = await axios.post("opponent/register", {
+            const res = await api.post("opponent/register", {
                 name,
                 label
             })
-            setMessage("登録が完了しました！")
+            showMessage("登録が完了しました！")
         } catch(err) {
-            setMessage("登録に失敗しました。名前か表示名が既に使われています。")
+            showMessage("登録に失敗しました。名前か表示名が既に使われています。")
         }
     }
 

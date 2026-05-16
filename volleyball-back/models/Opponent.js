@@ -7,14 +7,14 @@ const OpponentSchema = new mongoose.Schema(
             required: true,
             min: 2,
             max: 25,
-            unique: false,
+            unique: true,
         },
         label:{
             type: String,
             required: true,
             min: 1,
             max: 10,
-            unique: false,
+            unique: true,
         },
     },
 

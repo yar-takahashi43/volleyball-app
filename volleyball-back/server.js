@@ -7,9 +7,11 @@ const opponentRouter = require("./routes/opponent")
 const matchRouter = require("./routes/match")
 const playerRouter = require("./routes/player")
 const setRouter = require("./routes/set")
-const PORT = 5001
 const mongoose = require("mongoose")
+// process.envはdotenvより下に書くこと
 require("dotenv").config()
+
+const PORT = process.env.PORT
 
 // DBとの接続
 mongoose
@@ -35,4 +37,4 @@ app.get("/", (req, res) => {
     res.send("hello")
 })
 
-app.listen(PORT, () => console.log("サーバーが起動しました"))
+app.listen(PORT, () => console.log(`サーバーが起動しました (PORT: ${PORT})`))

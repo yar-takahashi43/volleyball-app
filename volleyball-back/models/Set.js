@@ -35,8 +35,8 @@ const SetSchema = new mongoose.Schema(
         ],
         actions: [{
             _id: {
-                type: String,
-                unique: true,
+                type: String
+                // unique: true,
             },
             serve: {
                 type: Array,

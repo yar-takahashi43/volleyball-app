@@ -6,7 +6,7 @@ import AddCommentIcon from '@mui/icons-material/AddComment';
 import React, { useState } from 'react'
 import "./Menu.css"
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios';
+import api from '../../Api';
 
 export default function Menu() {
     // 新規試合がクリックされたら試合の雛形を作成する。
@@ -15,9 +15,9 @@ export default function Menu() {
 
     const registerMatch = async() => {
         try{
-            const defaultOpponentId = 'dummyId'
-            // const res = await axios.post("match/register", {opponentId: defaultOpponentId})
-            const res = await axios.post("match/register")
+            // const defaultOpponentId = 'dummyId'
+            // const res = await api.post("match/register", {opponentId: defaultOpponentId})
+            const res = await api.post("/match/register")
             return res.data;
         } catch (err) {
             console.error(err);

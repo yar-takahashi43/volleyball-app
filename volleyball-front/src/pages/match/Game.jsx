@@ -2,7 +2,7 @@ import React from 'react'
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import ReplayCircleFilledIcon from '@mui/icons-material/ReplayCircleFilled';
 import "../../components/player/Player.css"
-import axios from 'axios';
+import api from '../../Api';
 import { useState } from 'react';
 
 export default function Game({match, date}) {
@@ -13,7 +13,7 @@ export default function Game({match, date}) {
 
     const handleDelete = async () => {
       try {
-        await axios.delete(`match/${match._id}`)
+        await api.delete(`match/${match._id}`)
         console.log("削除が完了しました。")
       } catch (err) {
         console.log("削除中にエラーが発生しました。" ,err)
@@ -23,7 +23,7 @@ export default function Game({match, date}) {
 
     const handleUpdate = async () => {
       try {
-        await axios.put(`match/${match._id}`, updatedOpponent)
+        await api.put(`match/${match._id}`, updatedOpponent)
         console.log("更新が完了しました。")
       } catch (err) {
         console.log("更新中にエラーが発生しました。" ,err)

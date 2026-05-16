@@ -1,20 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import ReplayCircleFilledIcon from '@mui/icons-material/ReplayCircleFilled';
 import "./Player.css"
-import axios from 'axios'
-import { Link } from 'react-router-dom';
+import api from '../../Api';
 
-export default function Player({player}) {
+export default function Player({player, onDelete, onUpdate}) {
 
   const[popup, setPopup] = useState(false)
   const[updatePopup, setUpdatePopup] = useState(false)
-  const[updatedPlayer, setUpdatedPlayer] = useState(false)
+  const[updatedPlayer, setUpdatedPlayer] = useState({
+      num: player.num,
+      name: player.name,
+      nickname: player.nickname
+  })
+  useEffect(() => {
+    setUpdatedPlayer({
+      num: player.num,
+      name: player.name,
+      nickname: player.nickname
+    });
+  }, [player]);
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`player/${player._id}`)
-      console.log("削除が完了しました。")
+      await api.delete(`player/${player._id}`)
+      onDelete(player._id)
     } catch (err) {
       console.log("削除中にエラーが発生しました。" ,err)
     }
@@ -23,8 +33,8 @@ export default function Player({player}) {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`player/${player._id}`, updatedPlayer)
-      console.log("更新が完了しました。")
+      const res = await api.put(`player/${player._id}`, updatedPlayer)
+      onUpdate(res.data)
     } catch (err) {
       console.log("更新中にエラーが発生しました。" ,err)
     }

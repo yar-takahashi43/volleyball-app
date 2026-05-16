@@ -73,11 +73,18 @@ router.get("/:id", async(req, res) => {
 
 //選手の更新
 router.put("/:id", async(req, res) => {
+    // try {
+    //     const player = await Player.findByIdAndUpdate(req.params.id, {
+    //         $set: req.body,
+    //     })
+    //     res.status(200).json("ユーザー情報が更新されました")
     try {
-        const player = await Player.findByIdAndUpdate(req.params.id, {
-            $set: req.body,
-        })
-        res.status(200).json("ユーザー情報が更新されました")
+        const player = await Player.findByIdAndUpdate(
+            req.params.id,
+            {$set: req.body},
+            { new: true}
+        )
+        res.status(200).json(player)
     } catch (err) {
         return res.status(500).json(err)
     }
