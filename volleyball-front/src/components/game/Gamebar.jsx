@@ -1,28 +1,41 @@
 import React, { useState, useEffect } from 'react'
-import { Players } from '../../dummyData'
 import "./Gamebar.css"
 import GameHead from './GameHead'
 import GameSubHead from "./GameSubHead"
 import ScoreDetail from './ScoreDetail'
-import axios from 'axios'
+import api from '../../Api';
 import { v4 as uuidv4 } from 'uuid'
 
 // ここのコンポーネントでセットのIdを決めて、それぞれのセット内容を記載するようにする。
 
 export default function Gamebar({
-  match, matchId, setId, setSelectedSetId,
+  match, setId, start, bench,
 }) {
   // 選手データをidで検索できるようにオブジェクトに変換
   const [playerMap, setPlayerMap] = useState({});
   const [selectedSet, setSelectedSet] = useState(null)
+  const [players, setPlayers] = useState([])
+  const activePlayers = [...start, ...bench]; // 試合に出ている選手だけ
 
+　useEffect(() => {
+    const fetchPlayers = async() => {
+      try {
+        const res = await api.get("player/players")
+        setPlayers(res.data)
+      } catch(err) {
+        console.error(err)
+      }
+    }
+    fetchPlayers()
+  }, [])
+  
   useEffect(() => {
     const map = {};
-    Players.forEach(player => {
+    players.forEach(player => {
       map[player.id] = player;
     });
     setPlayerMap(map);
-  }, []);
+  }, [players]);
 
   useEffect(() => {
     if (match && setId) {
@@ -110,7 +123,7 @@ export default function Gamebar({
     }
 
   const saveScore = async (id, player, score) => {
-      const response = await axios.put(`/api/sets/${id}`, {
+      const response = await api.put(`sets/${id}`, {
         team: player,
         change: score
       });

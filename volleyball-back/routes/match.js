@@ -63,6 +63,7 @@ router.post("/register", async (req, res) => {
         await initialSet.save();
         // 初期のSetをMatchのsetsに追加
         newMatch.sets.push(initialSet);
+        newMatch.currentSetId = initialSet._id;
         // Matchを保存
         const savedMatch = await newMatch.save();
         // 新規作成したMatchのIDを取得

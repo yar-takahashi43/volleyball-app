@@ -76,6 +76,12 @@
     align-items: center;
 }
 
+.currentSetText {
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+}
+
 .vs{
     font-size: 24px;
     color: white;

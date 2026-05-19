@@ -5,33 +5,25 @@ import HomeIcon from '@mui/icons-material/Home';
 import React, { useState, useEffect } from 'react'
 import "./Topbar.css"
 import Select from 'react-select';
-import { render } from '@testing-library/react';
 // import { Opponents } from '../../dummyData'
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../Api';
 
 export default function Topbar({match, opponent, setOpponent, setId, setSetId}) {
-    const[updateOpponent, setUpdatedOpponent] = useState(false)
-    const option =[
-        {value: 1, label: "第1セット"},
-        {value: 2, label: "第2セット"},
-        {value: 3, label: "第3セット"},
-        {value: 4, label: "第4セット"},
-        {value: 5, label: "第5セット"},
-        {value: 6, label: "第6セット"},
-    ]
-    const [selectedOpponent, setSelectedOpponent] = useState(null)
-    const [newSetId, setNewSetId] = useState(null)
-    const [newSet, setNewSet] = useState([])
+    const [selectedOpponentId, setSelectedOpponentId] = useState(null)
     const navigate = useNavigate()
+    const opponentOptions = opponent.map(o => ({
+      value: o._id,
+      label: o.label || "名前なし",
+    }));
 
     useEffect(() => {
         const fetchOpponent = async () => {
             try {
                 const res = await api.get(`/match/${match._id}`);
                 const fetchedMatch = res.data;
-                const selectedOpponentId = opponent.find(opp => opp._id === fetchedMatch.opponentId);
-                setSelectedOpponent(selectedOpponentId);
+                // const selectedOpponentId = opponent.find(opp => opp._id === fetchedMatch.opponentId);
+                setSelectedOpponentId(fetchedMatch.opponentId);
             } catch (err) {
                 console.error(err)
             }
@@ -39,11 +31,14 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
         fetchOpponent()
     }, []);
 
+    // DBの更新
     useEffect(() => {
-        if (selectedOpponent) {
+        if (selectedOpponentId) {
             const updateOpponent = async () => {
                 try {
-                    await api.put(`/match/${match._id}`, { opponentId: selectedOpponent._id });
+                    await api.put(`/match/${match._id}`, {
+                         opponentId: selectedOpponentId 
+                    });
                     console.log("対戦相手を選択しました。");
                     // setSelectedOpponent(null)
                 } catch (err) {
@@ -52,31 +47,21 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
             };
             updateOpponent()
         }
-    }, [selectedOpponent])
+    }, [selectedOpponentId])
 
-    const handleOpponentChange = (selectedOption) => {
-        if (selectedOption !== selectedOpponent) {
-            setSelectedOpponent(selectedOption);
-        }
-    }    
+    // const handleOpponentChange = (selectedOption) => {
+    //     if (selectedOption !== selectedOpponent) {
+    //         setSelectedOpponent(selectedOption);
+    //     }
+    // }
 
-    //新規セット作成に関して
     useEffect(() => {
-        const fetchNewSet = async () => {
-          try {
-            const res = await api.get(`/set/match/${match._id}/set/${setId}`);
-            setNewSet(res.data);
-          } catch (err) {
-            console.error(err);
-          }
-        };
-    
-        fetchNewSet();
-      }, [match._id, setId]);
-
-    const handleSetChange = (selectedOption) => {
-        setSetId(match.sets[selectedOption.value - 1]._id)
-    }
+      const fetchMatch = async () => {
+      const res = await api.get(`/match/${match._id}`);
+        setSetId(res.data.currentSetId);
+     };
+     fetchMatch();
+    }, []);
 
     const addSet = async() => {
         try{
@@ -89,13 +74,23 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
 
     const handleNextPage = async() => {
         const newSet = await addSet()
-        if (newSet) {
-            setNewSetId(newSet._id)
-            navigate(`/match/${match._id}/set/${newSet._id}`)
-        } else {
+        if (!newSet) {
             console.log("エラーが発生しました。")
+            return
+        }
+        // 新しいセットをcurrentSetIdに保存
+        await api.put(`/match/${match._id}`,{
+            currentSetId: newSet._id
+        })
+            // setNewSetId(newSet._id)
+            navigate(`/match/${match._id}/set/${newSet._id}`)
+         {
         }
     }
+
+    // 現在のセット数を出力する
+    const index = match.sets.findIndex(s => s.toString() === setId);
+    const currentSetNumber = index >= 0 ? index + 1 : 1;
 
   return (
     <div className='topbarContainer'>
@@ -111,25 +106,28 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
                 <span className='logo'>スコアシート</span>
             </div>
             <div className="setCount">
-                <Select 
+                {/* セット番号は自動的につくようにする */}
+                {/* <Select 
                     name="set" 
                     options={option}
                     defaultValue={null}
                     placeholder="セット選択"
                     value={option.find(option => option.value === setId)}
                     onChange={handleSetChange}
-                />
+                    /> */}
+                <span className='currentSetText'> 第{currentSetNumber}セット</span>
             </div>
             <span className='vs'>VS</span>
             <div className='searchbar'>
                 <Search className='searchIcon'/>
                 <Select
                     className="searchInput" 
-                    options={opponent || []}
+                    options={opponentOptions}
                     openMenuOnClick={true}
-                    onChange={handleOpponentChange}
+                    value={opponentOptions.find(o => o.value === selectedOpponentId)}
+                    // onChange={handleOpponentChange}
+                    onChange={(opt) => setSelectedOpponentId(opt.value)}
                     placeholder={"対戦相手選択"}
-                    value={selectedOpponent}
                 />
             </div>
         </div>
@@ -141,15 +139,9 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
                     <span className='topIcon'>TOPへ</span>
                 </Link>
             </div>
-            <div className='forward' onClick={handleNextPage}>
-                <Link
-                    to={newSetId ? `/match/${match._id}/set/${newSetId}` : '#'}
-                    onClick={handleNextPage}
-                    style={{textDecoration: 'none', color: 'white', display: 'flex'}}
-                >
+            <div className='forward' onClick={handleNextPage} style={{textDecoration: 'none', color: 'white', display: 'flex'}}>
                     <span className='forwardIcon'>次ページ</span>
                     <ArrowForwardIcon />
-                </Link>
             </div>
         </div>
     </div>

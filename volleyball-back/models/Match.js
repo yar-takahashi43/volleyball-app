@@ -14,6 +14,10 @@ const MatchSchema = new mongoose.Schema(
         sets: [{ 
             type: mongoose.Schema.Types.ObjectId, ref: 'Set' 
         }],
+        currentSetId: { 
+            type: String,
+            default: null 
+        },
     },
 
     {timestamps: true}

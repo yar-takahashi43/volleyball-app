@@ -1,4 +1,4 @@
-import { Children, createContext, useReducer, useEffect } from "react";
+import { createContext, useReducer, useEffect } from "react";
 import AuthReducer from "./AuthReducer";
 
 // 最初のユーザー状態の定義
