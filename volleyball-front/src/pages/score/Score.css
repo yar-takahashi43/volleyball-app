@@ -1,5 +1,13 @@
-.scoreContainer{
+.scoreContainer {
     display: flex;
     width: 100%;
     background-color: #f8fcff;
+    height: auto;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .scoreContainer {
+    flex-direction: column;
+  }
 }

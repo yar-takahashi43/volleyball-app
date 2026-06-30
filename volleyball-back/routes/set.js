@@ -39,26 +39,47 @@ async function getAllPlayerId(){
 //新規セット作成＆最終セット更新
 router.post('/match/:id', async (req, res) => {
     try {
-        const match = await Match.findById(req.params.id).populate('sets')
+        // const match = await Match.findById(req.params.id).populate('sets')
+        const match = await Match.findById(req.params.id);
         if (!match) {
             return res.status(404).json({ message: "Match not found" })
         }
-        // 現在のセット（最後のセット）を取得
-        const currentSet = match.sets[match.sets.length - 1]
-        if (currentSet) {
-            // 現在のセットの最終状態を保存
-            await currentSet.save()
-        }
-        // 新しいSetを作成し、Matchのsetsに追加
-        const allPlayerId = await getAllPlayerId()
+        // // 現在のセット（最後のセット）を取得
+        // const currentSet = match.sets[match.sets.length - 1]
+        // if (currentSet) {
+        //     // 現在のセットの最終状態を保存
+        //     await currentSet.save()
+        // }
+        // // 新しいSetを作成し、Matchのsetsに追加
+        // const allPlayerId = await getAllPlayerId()
+        // 新しいセットを作成
+        const players = await Player.find({}, "_id num nickname");
         const newSet = new Set({
-            benchMem: allPlayerId,
+            starPlayer: req.body.starPlayer || [],
+            benchMem: players.map(p => ({
+                playerId: p._id,
+                num: p.num,
+                nickname: p.nickname
+            })),
+            actions: []
         })
         await newSet.save()
-        match.sets.push(newSet)
 
-        const updatedMatch = await match.save()
-        return res.status(200).json(updatedMatch)
+        //マッチに追加する
+        // match.sets.push(newSet)
+        match.sets.push(newSet._id)
+        // 現在のセットを更新する
+        match.currentSetId = newSet._id
+        await match.save()
+        
+        // const updatedMatch = await match.save()
+        return res.status(200).json(
+            {
+                message: "New set created",
+                setId: newSet._id,
+                match
+            }
+        )
     } catch (err) {
         return res.status(500).json(err)
     }
@@ -67,7 +88,14 @@ router.post('/match/:id', async (req, res) => {
 // スコアの詳細表示
 router.get("/match/:matchId/set/:setId", async(req, res) => {
     try {
-        const match = await Match.findById(req.params.matchId).populate('sets')
+        const match = await Match.findById(req.params.matchId)
+            .populate({
+                path: "sets",
+                populate: [
+                    {path: "starPlayer.playerId", model: "Player" },
+                    {path: "benchMem.playerId", model: "Player" }
+                ]
+            })
         if (!match) {
             return res.status(404).json({ message: "match not found" })
         }
@@ -124,19 +152,65 @@ router.delete("/match/:matchId/set/:setId", async (req, res) => {
 
 router.put("/match/:matchId/set/:setId/starPlayer", async (req, res) => {
     try {
-        const match = await Match.findById(req.params.matchId).populate('sets')
-        if (!match) {
-            return res.status(404).json({ message: "match not found" })
-        }
-        const set = match.sets.find(set => set._id.toString() === req.params.setId)
+        const { starPlayerIds, benchMemIds} = req.body
+
+        // Set を直接取得（populate しない）
+        const set = await Set.findById(req.params.setId)
         if (!set) {
             return res.status(404).json({ message: "Set not found" })
         }
-        // リクエストボディから受け取った選手のID
-        const newStarPlayerId = req.body.starPlayerId
-        const newBenchMemId = req.body.benchMemId
-        set.starPlayer = newStarPlayerId
-        set.benchMem = newBenchMemId
+        // const match = await Match.findById(req.params.matchId).populate('sets')
+        // if (!match) {
+        //     return res.status(404).json({ message: "match not found" })
+        // }
+        // const set = match.sets.find(set => set._id.toString() === req.params.setId)
+        // if (!set) {
+        //     return res.status(404).json({ message: "Set not found" })
+        // }
+        // // リクエストボディから受け取った選手のID
+        // const newStarPlayerId = req.body.starPlayerId
+        // const newBenchMemId = req.body.benchMemId
+        // set.starPlayer = newStarPlayerId
+        // set.benchMem = newBenchMemId
+
+        // const starPlayers = await Player.find({ _id: { $in: req.body.starPlayerIds } });
+        // const benchPlayers = await Player.find({ _id: { $in: req.body.benchMemIds } });
+
+        // set.starPlayer = starPlayers.map(p => ({
+        //     playerId: p._id,
+        //     num: p.num,
+        //     nickname: p.nickname
+        // }));
+
+        // set.benchMem = benchPlayers.map(p => ({
+        //     playerId: p._id,
+        //     num: p.num,
+        //     nickname: p.nickname
+        // }));
+
+        // ★ 更新対象の Player をまとめて取得
+        const players = await Player.find({
+            _id: { $in: [...starPlayerIds, ...benchMemIds] }
+        });
+
+        // ★ Player → Set 用オブジェクトに変換
+        const toObj = (p) => ({
+            playerId: p._id.toString(),
+            num: p.num,
+            nickname: p.nickname
+        });
+
+        // ★ starPlayer 更新
+        set.starPlayer = players
+            .filter(p => starPlayerIds.includes(p._id.toString()))
+            .map(toObj);
+
+        // ★ benchMem 更新
+        set.benchMem = players
+            .filter(p => benchMemIds.includes(p._id.toString()))
+            .map(toObj);
+        console.log(players)
+
         await set.save()
 
         // // その選手が現在のスターティングメンバーの中に存在するか確認
@@ -152,8 +226,9 @@ router.put("/match/:matchId/set/:setId/starPlayer", async (req, res) => {
         // }
         // await set.save()
 
-        const updatedMatch = await match.save()
-        return res.status(200).json(updatedMatch)
+        // const updatedMatch = await match.save()
+        // return res.status(200).json(updatedMatch)
+        return res.status(200).json(set)
     } catch (err) {
         console.error(err)
         return res.status(500).json(err)

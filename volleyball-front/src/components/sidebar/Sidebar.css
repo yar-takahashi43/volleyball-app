@@ -1,10 +1,95 @@
-.Sidebar{
-    flex: 4px;
-    height: 100vh;
-    background-color: #f8fcff;
+/* Sidebar 全体 */
+.Sidebar {
+  width: 340px;        /* ← ここで幅を広げる */
+  min-width: 340px;
+  background-color: #f8fcff;
+  flex-shrink: 0;
+  height: auto;        /* ← 固定高さを解除 */
+  max-height: none;   /* ← 画面より大きくならない */
+  overflow-y: visible; 
+  overflow-x: hidden;  /* ← 横スクロール防止 */
+  box-sizing: border-box;
+  padding-right: 8px;
 }
 
-.sidebarWrapper{
-    padding: 20px;
+
+/* 各セクション共通 */
+.memberContainer,
+.receptionContainer,
+.spikeContainer {
+  width: 100%;
+  background-color: #f8fcff;
+  box-sizing: border-box;
 }
 
+/* タイトル共通 */
+.startingTitle,
+.benchTitle,
+.receptionTitle,
+.spikeTitle {
+  margin: 8px 0 4px 8px;
+  width: auto;
+}
+
+/* テーブルの外枠 */
+.startingTable,
+.benchTable,
+.receptionTable,
+.spikeTable {
+  width: 100%;
+  margin: 0 0 8px 0;
+}
+
+/* テーブル本体 */
+.startingTable table,
+.benchTable table,
+.receptionTable table,
+.spikeTable table {
+  width: calc(100% - 8px);
+  margin-left: 8px;
+  border-collapse: collapse;
+  table-layout: fixed; /* ← 列幅を均等にして崩れ防止 */
+}
+
+/* セル共通 */
+.startingTable th, .startingTable td,
+.benchTable th, .benchTable td,
+.receptionTable th, .receptionTable td,
+.spikeTable th, .spikeTable td {
+  text-align: center;
+  font-size: 14px;
+  border: 1px solid black;
+  padding: 8px;
+  white-space: nowrap;
+}
+
+.addButton,
+.minusButton{
+    width: 36px;          /* ← 固定幅 */
+    height: 36px;         /* ← 固定高さ */
+    border-radius: 50%;   /* ← 完全な円になる */
+    padding: 1px 7px;
+    margin: 0 10px;
+    /* border-radius: 9999px; */
+    font-size: 20px;
+    background-color: rgb(221,194,162);
+    box-shadow: 3px 3px 8px 1px gray;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.addButton:hover,
+.minusButton:hover{
+    box-shadow: none;
+    transform: translate(3px, 3px);
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .Sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-height: none;
+    height: auto;
+  }
+}

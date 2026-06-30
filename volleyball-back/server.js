@@ -7,6 +7,7 @@ const opponentRouter = require("./routes/opponent")
 const matchRouter = require("./routes/match")
 const playerRouter = require("./routes/player")
 const setRouter = require("./routes/set")
+const scoreRouter = require("./routes/scores")
 const mongoose = require("mongoose")
 // process.envはdotenvより下に書くこと
 require("dotenv").config()
@@ -31,6 +32,7 @@ app.use("/api/auth", authRouter)
 app.use("/api/opponent", opponentRouter)
 app.use("/api/match", matchRouter)
 app.use("/api/set", setRouter)
+app.use("/api/scores", scoreRouter)
 app.use("/api/player", playerRouter)
 
 app.get("/", (req, res) => {

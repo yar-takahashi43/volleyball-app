@@ -9,7 +9,7 @@ import Select from 'react-select';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../Api';
 
-export default function Topbar({match, opponent, setOpponent, setId, setSetId}) {
+export default function Topbar({match, opponent, setId, setSetId, starPlayer, benchMem, setCurrentSetId}) {
     const [selectedOpponentId, setSelectedOpponentId] = useState(null)
     const navigate = useNavigate()
     const opponentOptions = opponent.map(o => ({
@@ -63,29 +63,39 @@ export default function Topbar({match, opponent, setOpponent, setId, setSetId}) 
      fetchMatch();
     }, []);
 
-    const addSet = async() => {
-        try{
-            const res = await api.post(`/set/match/${match._id}`)
-            return res.data
-        } catch (err){
-            console.error(err)
-        }
-    }
+    // const addSet = async() => {
+
+    //         return res.data
+    //     } catch (err){
+    //         console.error(err)
+    //     }
+    // }
 
     const handleNextPage = async() => {
-        const newSet = await addSet()
-        if (!newSet) {
-            console.log("エラーが発生しました。")
-            return
+        try{
+            const res = await api.post(`/set/match/${match._id}`, {
+                starPlayer,
+                benchMem
+            })
+            const newSetId = res.data.setId
+            if (!newSetId) {
+                console.log("エラーが発生しました。")
+                return
+            }
+            // グローバル or 親コンポーネントで currentSetId を更新
+            setCurrentSetId(newSetId);
+
+            // Score.jsx を新しいセットに切り替える
+            navigate(`/score/${match._id}/${newSetId}`);
+        } catch (err) {
+            console.log("Failed to create next set:", err)
         }
-        // 新しいセットをcurrentSetIdに保存
-        await api.put(`/match/${match._id}`,{
-            currentSetId: newSet._id
-        })
-            // setNewSetId(newSet._id)
-            navigate(`/match/${match._id}/set/${newSet._id}`)
-         {
-        }
+        // // 新しいセットをcurrentSetIdに保存
+        // await api.put(`/match/${match._id}`,{
+        //     currentSetId: newSet._id
+        // })
+        //     // setNewSetId(newSet._id)
+        //     navigate(`/match/${match._id}/set/${newSet._id}`)
     }
 
     // 現在のセット数を出力する

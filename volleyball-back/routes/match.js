@@ -21,54 +21,39 @@ router.post("/register", async (req, res) => {
             opponentId: null,
         });
         // 新しいSetを作成し、Matchのsetsに追加
-        const allPlayerId = await getAllPlayerId()
+        // const allPlayerId = await getAllPlayerId()
+        const players = await Player.find({}, "_id num nickname");
         // 初期のSetを作成
         const initialSet = new Set({
-            myScore: 0,
-            opponentScore: 0,
             starPlayer: [],
-            benchMem: allPlayerId,
-            reception: {
-                A: 0,
-                B: 0,
-                C: 0,
-                D: 0,
-            },
-            spike: [
-                {playerId: null, spikeScore: 0},
-                {playerId: null, spikeScore: 0},
-                {playerId: null, spikeScore: 0},
-                {playerId: null, spikeScore: 0},
-                {playerId: null, spikeScore: 0}
-            ],
-            actions: [{
-                _id: null,
-                serve: [{
-                    playerId: null,
-                    serveState: ['ace', 'miss', 'null'],
-                    score: 0
-                }],
-                reason: [{
-                    playerId: null,
-                    getScore: ["", "スパイク", "アタック", "ブロック"],
-                    loseScore: ["", "レシーブ", "トス", "スパイク", "ブロック"],
-                    score: 0
-                }],
-                score: {
-                    my: 0,
-                    opponent: 0
-                }
-            }]
+            benchMem: players.map(p => ({
+                playerId: p._id,
+                num: p.num,
+                nickname: p.nickname
+            })),
+            actions: []
         });
         await initialSet.save();
         // 初期のSetをMatchのsetsに追加
-        newMatch.sets.push(initialSet);
+        newMatch.sets.push(initialSet._id);
         newMatch.currentSetId = initialSet._id;
         // Matchを保存
-        const savedMatch = await newMatch.save();
+        await newMatch.save();
+        // const savedMatch = await newMatch.save();
         // 新規作成したMatchのIDを取得
-        const matchId = savedMatch._id
-        res.status(200).json(savedMatch);
+        // const matchId = savedMatch._id
+
+        // ★★★ ここで populate して返す（これが今回の本命）
+        const populatedMatch = await Match.findById(newMatch._id)
+            .populate({
+                path: "sets",
+                populate: [
+                    { path: "starPlayer.playerId", model: "Player" },
+                    { path: "benchMem.playerId", model: "Player" }
+                ]
+            });
+
+        res.status(200).json(populatedMatch);
     } catch (err) {
         res.status(500).json(err);
     }
@@ -149,7 +134,16 @@ router.get("/matches/:date", async (req, res) => {
 router.get("/:id", async (req, res) => {
     try {
         const match = await Match.findById(req.params.id)
-            .exec();
+            // .exec();
+            .populate({
+                path: "sets",
+                populate: [
+                    {path: "starPlayer.playerId", model: "Player"},
+                    {path: "benchMem.playerId", model: "Player"}
+                ]
+            })
+            // console.log("matchのベンチ選手情報は次のとおり。: " + match.sets[0].benchMem)
+            // console.log("match　: " + match)
         res.status(200).json(match);
     } catch (err) {
         console.error(err);
