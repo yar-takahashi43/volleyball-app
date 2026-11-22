@@ -77,6 +77,13 @@
     cursor: pointer;
 }
 
+.loginError{
+    color: #c62828;
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+
 .loginForgot{
     text-align: center;
     color: #41428b;

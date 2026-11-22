@@ -55,3 +55,15 @@
 .menubarHr2{
     margin: 20px 0;
 }
+
+.menubarLogoutButton{
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+}
+
+.menubarLogoutButton .menubarListItemText{
+    color: black;
+}

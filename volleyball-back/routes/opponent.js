@@ -69,11 +69,18 @@ router.get("/:id", async(req, res) => {
 
 //対戦相手の更新
 router.put("/:id", async(req, res) => {
+    // 更新後しか返してない
+    // try {
+    //     const opponent = await Opponent.findByIdAndUpdate(req.params.id, {
+    //         $set: req.body,
+    //     })
     try {
-        const opponent = await Opponent.findByIdAndUpdate(req.params.id, {
-            $set: req.body,
-        })
-        res.status(200).json("ユーザー情報が更新されました")
+        const opponent = await Opponent.findByIdAndUpdate(
+            req.params.id, 
+            { $set: req.body},
+            { new: true} // ここが更新後のデータを返す
+        )
+        res.status(200).json(opponent) // 更新後の対戦相手
     } catch (err) {
         return res.status(500).json(err)
     }

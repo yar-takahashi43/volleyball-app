@@ -1,18 +1,25 @@
 .topbarContainer{
     background-color: #2c517c;
-    height: 50px;
+    height: 56px;
+    min-height: 56px;
     width: 100%;
     display: flex;
     align-items: center;
     top: 0;
     position: sticky;
     z-index: 100;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+    box-sizing: border-box;
 }
 
 .searchIcon,
 .back,
 .forward{
     display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .topbarLeft{
@@ -22,9 +29,10 @@
     justify-content: space-around;
     color: white;
     cursor: pointer;
-    /* 以下menubarListの中身がホバーされたら凹む設定 */
     border-radius: 10px;
     transition: all 0.3s;
+    min-height: 44px;
+    touch-action: manipulation;
 }
 
 .topbarRight{
@@ -38,9 +46,12 @@
 
 .toTop,
 .forward{
-    /* 以下menubarListの中身がホバーされたら凹む設定 */
     border-radius: 10px;
     transition: all 0.3s;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    touch-action: manipulation;
 }
 
 .topbarLeft:hover,
@@ -54,30 +65,41 @@
     flex: 9;
     display: flex;
     align-items: center;
-    margin-left: 5%;
+    margin-left: 2%;
+    min-width: 0;
 }
 
 .sheetName{
     width: 30%;
+    min-width: 0;
 }
 
 .logo{
-    font-size: 24px;
+    font-size: 22px;
     color: white;
     font-weight: bold;
-    margin-left: 20%;
-    margin-right: 20%;
+    margin-left: 8%;
+    margin-right: 8%;
+    white-space: nowrap;
 }
 
 .setCount{
     width: 25%;
-    margin-left: 5%;
-    margin-right: 5%;
+    margin-left: 2%;
+    margin-right: 2%;
     align-items: center;
+    min-width: 0;
+}
+
+.currentSetText {
+    font-size: 22px;
+    color: white;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
 .vs{
-    font-size: 24px;
+    font-size: 22px;
     color: white;
     font-weight: bold;
     margin-left: 2%;
@@ -86,11 +108,13 @@
 
 .searchbar{
     width: 30%;
+    min-width: 140px;
     background-color: white;
     border-radius: 25px;
     display: flex;
     align-items: center;
     flex-direction: row;
+    min-height: 40px;
 }
 
 .searchIcon{
@@ -102,8 +126,77 @@
 .searchInput{
     border: none;
     width: 90%;
+    font-size: 16px;
 }
 
 .searchInput:focus{
     outline: none;
+}
+
+/* タブレット縦・狭い画面: ラベル短縮スペースを確保 */
+@media (max-width: 899px) {
+    .topbarContainer {
+        height: auto;
+        min-height: 56px;
+        flex-wrap: wrap;
+        padding: 6px 4px;
+        row-gap: 4px;
+    }
+
+    .topbarLeft,
+    .topbarRight {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+
+    .topbarCenter {
+        flex: 1 1 100%;
+        margin-left: 0;
+        justify-content: space-between;
+        padding: 0 8px;
+        order: -1;
+    }
+
+    .sheetName {
+        width: auto;
+    }
+
+    .logo {
+        font-size: 18px;
+        margin-left: 0;
+        margin-right: 8px;
+    }
+
+    .setCount {
+        width: auto;
+        margin: 0 8px;
+    }
+
+    .currentSetText,
+    .vs {
+        font-size: 18px;
+    }
+
+    .searchbar {
+        width: 42%;
+        flex: 1;
+    }
+
+    .iconName,
+    .topIcon,
+    .forwardIcon {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 900px) and (max-width: 1366px) {
+    .logo,
+    .currentSetText,
+    .vs {
+        font-size: 22px;
+    }
+
+    .searchbar {
+        min-height: 44px;
+    }
 }

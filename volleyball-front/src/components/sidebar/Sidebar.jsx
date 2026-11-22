@@ -1,37 +1,88 @@
 import React, { useState } from 'react'
 import "./Sidebar.css"
-import {Players, Users} from "../../dummyData"
-import Spike from "../evaluation/Spike"
-import Reception from "../evaluation/Reception"
-import Member from '../member/Member'
+import Spike from "./Spike"
+import Reception from "./Reception"
+import Member from './Member'
 
+export default function Sidebar({
+  matchId, setId,
+  // start, setStart, bench, setBench, 
+  starPlayer, setStarPlayer, benchMem, setBenchMem, actions, pushScore
+}) {
 
-export default function Sidebar({match}) {
+  // const [reception, setReception] = useState(match?.sets[0].reception || {
+  //   A: 0,
+  //   B: 0,
+  //   C: 0,
+  //   D: 0,
+  // })
 
-    // レセプションのカウント
-    const [addReception, setAddReception] = useState(match.reception.receptionNum)
-    const [minusReception, setMinusReception] = useState(match.reception.receptionNum)
+  // const [spike, setSpike] = useState(match?.sets[0].spike || [
+  //   {playerId: null, spikeScore: 0},
+  //   {playerId: null, spikeScore: 0},
+  //   {playerId: null, spikeScore: 0},
+  //   {playerId: null, spikeScore: 0},
+  //   {playerId: null, spikeScore: 0}
+  // ]);
 
-    // スパイクのカウント
-    const [addSpike, setAddSpike] = useState(match.spike.spikeScore)
-    const [minusSpike, setMinusSpike] = useState(match.spike.spikeScore)
+  // // スパイク得点
+  // const handleSpikePoint = (playerId) => {
+  //   pushScore({
+  //     matchId,
+  //     setId,
+  //     action: "spike",
+  //     playerId,
+  //     point: 1,
+  //     timestamp: Date.now()
+  //   });
+  // };
 
+  // // スパイク失点
+  // const handleSpikeMiss = (playerId) => {
+  //   pushScore({
+  //     matchId,
+  //     setId,
+  //     action: "spike",
+  //     playerId,
+  //     point: -1,
+  //     timestamp: Date.now()
+  //   });
+  // };
+
+  
   return (
     <div className='Sidebar'>
-        <Member member={match}/>
-        <Reception 
-            reception={match.reception}
-            addReception={addReception}
-            setAddReception={setAddReception}
-            minusReception={minusReception}
-            setMinusReception={setMinusReception}
+        <Member 
+            // member={match} 
+            // matchId={matchId} 
+            // setId={setId}
+            // start={start}
+            // setStart={setStart}
+            // bench={bench}
+            // setBench={setBench}
+            start={starPlayer}
+            setStart={setStarPlayer}
+            bench={benchMem}
+            setBench={setBenchMem}
+            matchId={matchId}
+            setId={setId}
         />
+        <Reception 
+            // reception={reception}
+            // setReception={setReception}
+            actions={actions}
+            matchId={matchId} 
+            setId={setId}
+            pushScore={pushScore}
+            />
         <Spike 
-            spike={match.spike}
-            addSpike={addSpike}
-            setAddSpike={setAddSpike}
-            minusSpike={minusSpike}
-            setMinusSpike={setMinusSpike}
+            actions={actions}
+            // setSpike={setSpike}
+            matchId={matchId} 
+            setId={setId}
+            start={starPlayer}
+            bench={benchMem}
+            pushScore={pushScore}
         />
     </div>
   )

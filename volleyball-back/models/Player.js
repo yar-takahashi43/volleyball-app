@@ -8,19 +8,19 @@ const PlayerSchema = new mongoose.Schema(
         // },
         num:{
             type: String,
-            require: true,
+            required: true,
             unique: true
         },
         name:{
             type: String,
-            require: true,
+            required: true,
             min: 3,
             max: 25,
             unique: true,
         },
         nickname:{
             type: String,
-            require: true,
+            required: true,
             min: 1,
             max: 10,
             unique: true,

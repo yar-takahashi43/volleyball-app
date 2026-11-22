@@ -1,6 +1,8 @@
 const router = require("express").Router()
 const Match = require("../models/Match")
-const Player = require("../models/Player")
+const Set = require("../models/Set")
+const Player = require("../models/Player");
+const { serializeMatch } = require("../utils/serializeMember")
 
 // 選手全員のIDを取得する
 async function getAllPlayerId(){
@@ -12,38 +14,38 @@ async function getAllPlayerId(){
     }))
 }
 
-// 新規試合登録
+// 新規試合登録(actionsに関しては要検討)
 router.post("/register", async (req, res) => {
     try {
-        const allPlayerId = await getAllPlayerId()
+        // 新しいMatchを作成
         const newMatch = new Match({
-            opponentId: req.body.opponentId,
-            benchMem: allPlayerId
+            opponentId: null,
         });
-        const savedMatch = await newMatch.save();
-        res.status(200).json(savedMatch);
+        const players = await Player.find({}, "_id num nickname");
+        // 初期のSetを作成
+        const initialSet = new Set({
+            starPlayer: [],
+            benchMem: players.map(p => ({
+                playerId: p._id,
+                num: p.num,
+                nickname: p.nickname
+            })),
+            actions: []
+        });
+        await initialSet.save();
+        // 初期のSetをMatchのsetsに追加
+        newMatch.sets.push(initialSet._id);
+        newMatch.currentSetId = initialSet._id;
+        // Matchを保存
+        await newMatch.save();
+
+        // sets のみ populate（playerId の nested populate はしない）
+        const matchWithSets = await Match.findById(newMatch._id)
+            .populate("sets");
+
+        res.status(200).json(serializeMatch(matchWithSets));
     } catch (err) {
-        console.error(err);
         res.status(500).json(err);
-    }
-});
-
-// スターティングメンバー更新
-router.put("/:id/starPlayer", async (req, res) => {
-    try {
-        const match = await Match.findById(req.params.id);
-        if (!match) {
-            return res.status(404).json({ message: "Match not found" });
-        }
-
-        // ベンチメンバーから7人を選び、starPlayerに設定
-        match.starPlayer = match.benchMem.slice(0, 7);
-
-        const updatedMatch = await match.save();
-        return res.status(200).json(updatedMatch);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json(err);
     }
 });
 
@@ -59,7 +61,24 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-// スコア更新に関してはsetで行う。
+// 試合全体の更新
+router.put("/:id", async (req, res) => {
+    try {
+        const updatedMatch = await Match.findByIdAndUpdate(
+            req.params.id, 
+            { $set: req.body }, 
+            { new: true }
+        )
+        if(!updatedMatch) {
+            return res.status(404).json({ message: "match not found" });
+        }
+        // 更新後の試合を返す
+        res.status(200).json(updatedMatch);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
 
 // 日付ごとに試合をフォルダにまとめて試合を実施した日時フォルダを取得
 router.get("/matches", async (req, res) => {
@@ -104,10 +123,15 @@ router.get("/matches/:date", async (req, res) => {
 // 試合の詳細を取得する
 router.get("/:id", async (req, res) => {
     try {
+        // sets のみ populate（playerId の nested populate はしない）
         const match = await Match.findById(req.params.id)
-            .populate('matches')
-            .exec();
-        res.status(200).json(match);
+            .populate("sets")
+
+        if (!match) {
+            return res.status(404).json({ message: "match not found" });
+        }
+
+        res.status(200).json(serializeMatch(match));
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
@@ -116,10 +140,9 @@ router.get("/:id", async (req, res) => {
 
 
 // 対戦相手ごとに試合詳細を取得する。
-router.get("/matches/:opponentId", async (req, res) => {
+router.get("/opponent/:opponentId", async (req, res) => {
     try {
         const matches = await Match.find({ opponentId: req.params.opponentId })
-            .populate('matches')
             .exec()
         res.status(200).json(matches);
     } catch (err) {

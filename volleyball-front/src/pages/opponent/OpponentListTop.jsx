@@ -14,7 +14,7 @@ export default function OpponentDetailsTop() {
                 </div>
             </div>
             <div className="topName">
-                <span className="name">選手一覧</span>
+                <span className="name">対戦相手一覧</span>
             </div>
             <div className='topRight'>
                 <div className='topForward'>

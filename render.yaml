@@ -1,0 +1,39 @@
+# Render Blueprint — volleyball-app
+# Dashboard: New > Blueprint からこのリポジトリを接続する。
+# シークレット（MONGOURL / JWT_SECRET 等）は Dashboard の Environment で設定する。
+
+services:
+  - type: web
+    name: volleyball-api
+    runtime: node
+    rootDir: volleyball-back
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGOURL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
+
+  - type: web
+    name: volleyball-front
+    runtime: static
+    rootDir: volleyball-front
+    buildCommand: npm install && npm run build
+    # staticPublishPath はリポジトリルートからの相対パス
+    staticPublishPath: ./volleyball-front/build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false

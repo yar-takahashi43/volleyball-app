@@ -1,104 +1,62 @@
 const mongoose = require("mongoose")
 
+const ActionSchema = new mongoose.Schema(
+    {
+        action: {
+            type: String,
+            required: true,
+            enum: ["reception", "spike", "serve", "point"]
+        },
+        playerId: {
+            type: String,
+            default: null
+        },
+        point: {
+            type: Number,
+            default: 0
+        },
+        result: {
+            type: String,
+            default: null
+        },
+        reason: {
+            type: String,
+            default: null
+        },
+        timestamp: {
+            type: Number,
+            required: true
+        }
+    },
+    {
+        _id: false
+    }
+);
+
 const SetSchema = new mongoose.Schema(
     {
-        id: {
-            type: String,
-            unique: true,
-            require: true,
-        },
-        myScore: {
-            type: Number,
-            default: 0,
-        },
-        opponentScore: {
-            type: Number,
-            default: 0,
-        },
-        reception : {
-            A: {receptionNum: {type: Number, default: 0}},
-            B: {receptionNum: {type: Number, default: 0}},
-            C: {receptionNum: {type: Number, default: 0}},
-            D: {receptionNum: {type: Number, default: 0}}
-        },
-        spike : [
-            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
-            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
-            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
-            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}},
-            {playerId: {type: String, default: null}, spikeScore: {type: Number, default: 0}}
+        starPlayer: [
+            {
+                playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+                num: String,
+                nickname: String
+            }
+        ],
+        benchMem: [
+            {
+                playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+                num: String,
+                nickname: String
+            }
         ],
         actions: {
-            type: Array,
-            default: [],
-            min: 0,
-            max: 45,
-            _id: {
-                type: String,
-                unique: true,
-            },
-            serve: {
-                type: Array,
-                default:["", "エース", "ミス"],
-                playerId: {
-                    type: String,
-                    default: null
-                },
-                serveState:{
-                    type: String,
-                    enum: ['ace', 'miss', 'null'],
-                    default: null,
-                },
-                // isAce: {
-                //     type: Boolean,
-                //     default: false,
-                // },
-                // isMiss: {
-                //     type: Boolean,
-                //     default: false,
-                // },
-                score: {
-                    type: Number,
-                    default: 0,
-                    min: 0
-                }
-            },
-            reason: {
-                type: Array,
-                default: [],
-                playerId: {
-                    type: String,
-                },
-                getScore: {
-                    type: Array,
-                    default:["", "スパイク", "アタック", "ブロック"]
-                },
-                loseScore: {
-                    type: Array,
-                    default:["", "レシーブ", "トス", "スパイク", "ブロック"]
-                },
-                score: {
-                    type: Number,
-                    default: 0,
-                    min: 0
-                }
-            },
-            score: {
-                type: Array,
-                my: {
-                    type: Number,
-                    default: 0,
-                    min: 0
-                },
-                opponent: {
-                    type: Number,
-                    default: 0,
-                    min: 0
-                }
-            }
+            type: [ActionSchema],
+            default: []
         }
+    },
+    {
+        timestamps: true
     }
-)
-
+);
 
 module.exports = mongoose.model("Set", SetSchema)

@@ -5,23 +5,23 @@ const UserSchema = new mongoose.Schema(
         username:{
             type: String,
             required: true,
-            min: 3,
-            max: 25,
+            minlength: 3,
+            maxlength: 25,
             unique: true,
         },
         email:{
             type: String,
             required: true,
-            max: 50,
+            maxlength: 50,
             unique: true,
         },
         password:{
             type: String,
             required: true,
-            max: 6,
-            min: 50,
+            minlength: 6,
+            maxlength: 100,
         },
-        // 権限に関するもの。ログインしているかどうか。
+        // 管理者フラグ
         isAdmin:{
             type: Boolean,
             default: false,

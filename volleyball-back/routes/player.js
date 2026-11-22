@@ -4,6 +4,12 @@ const Player = require("../models/Player")
 //選手の登録
 router.post("/register", async (req, res) => {
     try{
+        // Check if the number is already in use
+        const existingPlayer = await Player.findOne({ num: req.body.num });
+        if (existingPlayer) {
+            return res.status(400).json("この背番号はすでに使用されています。");
+        }
+
         const newPlayer = await new Player({
             num: req.body.num,
             name: req.body.name,
@@ -16,6 +22,7 @@ router.post("/register", async (req, res) => {
         return res.status(500).json(err)
     }
 })
+
 
 //選手一覧取得
 router.get("/players", async(req, res) => {
@@ -66,11 +73,18 @@ router.get("/:id", async(req, res) => {
 
 //選手の更新
 router.put("/:id", async(req, res) => {
+    // try {
+    //     const player = await Player.findByIdAndUpdate(req.params.id, {
+    //         $set: req.body,
+    //     })
+    //     res.status(200).json("ユーザー情報が更新されました")
     try {
-        const player = await Player.findByIdAndUpdate(req.params.id, {
-            $set: req.body,
-        })
-        res.status(200).json("ユーザー情報が更新されました")
+        const player = await Player.findByIdAndUpdate(
+            req.params.id,
+            {$set: req.body},
+            { new: true}
+        )
+        res.status(200).json(player)
     } catch (err) {
         return res.status(500).json(err)
     }

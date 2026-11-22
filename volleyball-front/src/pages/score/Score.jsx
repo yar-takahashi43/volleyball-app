@@ -1,37 +1,61 @@
-import React, { useState } from 'react'
+import React from 'react'
 import "./Score.css"
 import Topbar from '../../components/topbar/Topbar'
 import Sidebar from '../../components/sidebar/Sidebar'
-import { Opponents, Players, Matches } from '../../dummyData'
-import Gamebar from '../../components/game/Gamebar'
+import Scorebar from '../../components/game/Scorebar'
 
-export default function Score({match, setMatch}) {
-    // 相手データを保持する。
-    const [opponent, setOpponent] = useState(Opponents)
-    
-    // 試合IDを定める。
-    const [matchId, setMatchId] = useState(1)
-    const matchData = matchId ? match.find(match => match.matchId === matchId) : null
-    // 試合のデータを使用してTableコンポーネントをレンダリング
-    //   return <Table actions={matchData.sets[0].actions} />;
+/**
+ * 試合スコア画面のレイアウトを組み立てる。
+ */
+export default function Score({
+    selectedSetId,
+    match,
+    start,
+    setStart,
+    bench,
+    setBench,
+    opponent,
+    pushScore,
+    onSelectNextSet,
+    onSelectPreviousSet
+}) {
+    const currentSet = match.sets.find(function (setItem) {
+        return String(setItem._id) === String(selectedSetId);
+    });
 
-    console.log(Array.isArray(Opponents));
-    console.log(Array.isArray(opponent));
+    if (!currentSet) {
+        return <div>Loading...</div>;
+    }
 
-  return (
-    <>
-        <Topbar opponent={opponent} key={opponent.id} setOpponent={setOpponent} />
-        <div className="scoreContainer">
-            <Sidebar 
-                match={matchData}
-                key={matchId.id} 
-                // playerData={getPlayerData}
-                />
-            <Gamebar 
-                matchData={matchData}
-                key={matchId.id}
+    return (
+        <>
+            <Topbar
+                match={match}
+                opponent={opponent}
+                key={opponent ? opponent.id : 'default-key'}
+                setId={selectedSetId}
+                onSelectNextSet={onSelectNextSet}
+                onSelectPreviousSet={onSelectPreviousSet}
             />
-        </div>
-    </>
-  )
+            <div className="scoreContainer">
+                <Sidebar
+                    matchId={match ? match._id : 'default-key'}
+                    setId={selectedSetId}
+                    starPlayer={start}
+                    setStarPlayer={setStart}
+                    benchMem={bench}
+                    setBenchMem={setBench}
+                    actions={currentSet.actions}
+                    pushScore={pushScore}
+                />
+                <Scorebar
+                    match={match}
+                    setId={selectedSetId}
+                    start={start}
+                    bench={bench}
+                    pushScore={pushScore}
+                />
+            </div>
+        </>
+    )
 }

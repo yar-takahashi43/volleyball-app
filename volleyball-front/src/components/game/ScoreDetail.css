@@ -1,71 +1,101 @@
+.detailRow {
+  margin: 0;
+}
 
-.detailContainer {
-    /* 他のスタイル */
-    justify-content: space-between;
-    width: 90%;
-    padding: 0; /* パディングを0に設定 */
+.serveCell,
+.reasonCell,
+.scoreCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scoreCell {
+  justify-content: space-evenly;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* 選手セレクト: 背番号+表示名が読める幅。iOS ズーム防止で 16px */
+.selectPlayer {
+  width: 132px;
+  min-width: 120px;
+  max-width: 150px;
+  flex-shrink: 0;
+  min-height: 40px;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+/* 得点・失点セレクト（下書き用） */
+.selectAttack {
+  width: 120px;
+  min-width: 100px;
+  max-width: 140px;
+  flex: 1;
+  min-height: 40px;
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+/* 確定行の全文表示（サイドバー同等以上） */
+.scoreReadonlyText {
+  display: block;
+  width: 120px;
+  min-width: 100px;
+  max-width: 140px;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+  padding: 2px 0;
+}
+
+.scoreReadonlyPlayer {
+  display: block;
+  width: 132px;
+  min-width: 120px;
+  max-width: 150px;
+  flex-shrink: 0;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* タブレット向けタッチターゲット */
+.bigCheckbox {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  transform: scale(1.05);
+  touch-action: manipulation;
+}
+
+.serveCell input[type="checkbox"] {
+  margin: 0;
+}
+
+@media (min-width: 900px) and (max-width: 1366px) {
+  .selectPlayer,
+  .selectAttack {
+    min-height: 44px;
   }
-  
-  .detailComponents {
-    /* 他のスタイル */
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    justify-content: space-around;
-    margin: 0 5% 0 5%;
-  }
-  
-  .detailComponents table {
-    width: 100%;
-    border-collapse: collapse; /* テーブルのセル間の境界線を重ねる */
-}
 
-  /* テーブル全体を画面幅いっぱいに広げる */
-  .detailComponents table {
-    width: 100%;
+  .bigCheckbox {
+    width: 30px;
+    height: 30px;
   }
 
-/* 以下2段目 */
-.detailComponentsBottom th, .detailComponentsBottom td {
-    padding: 0 !important; /* パディングを0に設定 */
-    margin: 0 !important; /* マージンを0に設定 */
-}
-
-.detailComponentsBottom {
-    /* 他のスタイル */
-    display: flex;
-    justify-content: space-between;
-}
-  
-.detailComponentsBottom td {
-    border-left: 1px solid grey; /* 項目間に縦線を追加 */
-    flex:1;
-}
-
-.serve2, .reason2, .score2 {
-    /* 他のスタイル */
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    border: 1px solid black;
-}
-
-.serve2 {
-    flex: 4;
-}
-  
-.reason2 {
-    flex: 5;
-}
-  
-.score2 {
-    flex: 3;
-}
-  
-.first{
-    border-left: none !important;
-}
-
-.searchInput{
-    width: auto;
+  .scoreCell {
+    font-size: 18px;
+  }
 }
