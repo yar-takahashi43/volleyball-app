@@ -1,211 +1,183 @@
 import React, { useState, useEffect } from 'react'
 import "./Scorebar.css"
-import GameHead from './GameHead'
-import GameSubHead from "./GameSubHead"
 import ScoreDetail from './ScoreDetail'
-import api from '../../Api';
+import { deriveScoreRows } from '../../utils/deriveScoreRows'
 
-// ここのコンポーネントでセットのIdを決めて、それぞれのセット内容を記載するようにする。
+const POINT_REASONS_MY = ["spike", "block", "attack"];
+
+/**
+ * 空の下書き行を作る。
+ */
+function createEmptyDraft() {
+  return {
+    key: "draft",
+    servePlayerId: null,
+    serveResult: null,
+    pointPlayerId: null,
+    pointResult: null,
+    reason: null,
+    myScore: null,
+    opponentScore: null,
+    committed: false
+  };
+}
+
+/**
+ * 下書きがエース/ミスとして確定できるか判定する。
+ */
+function canCommitAceOrMiss(draft) {
+  if (!draft.servePlayerId) {
+    return false;
+  }
+
+  if (draft.serveResult !== "ace" && draft.serveResult !== "miss") {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * 下書きがラリー決着として確定できるか判定する。
+ */
+function canCommitRally(draft) {
+  if (!draft.servePlayerId) {
+    return false;
+  }
+
+  if (draft.serveResult === "ace" || draft.serveResult === "miss") {
+    return false;
+  }
+
+  if (!draft.pointPlayerId) {
+    return false;
+  }
+
+  if (!draft.reason) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Scorebar: actions から行を derive し、下書き確定時に pushScore する。
+ */
 export default function Scorebar({ match, setId, start, bench, pushScore }) {
+  const [draft, setDraft] = useState(createEmptyDraft);
 
-  const [selectedSet, setSelectedSet] = useState(null);
-  const [actions, setActions] = useState([]);
+  const selectedSet = match && setId
+    ? match.sets.find(function (setItem) {
+        return String(setItem._id) === String(setId);
+      })
+    : null;
 
-  useEffect(() => {
-    if (match && setId) {
-      const found = match.sets.find(s => s._id === setId);
-      setSelectedSet(found);
+  useEffect(function () {
+    setDraft(createEmptyDraft());
+  }, [setId]);
 
-      if (found?.actions) {
-        setActions(found.actions)
-      }
+  if (!selectedSet) {
+    return <div className="gamebar" id="scorebar-no-set">セットが選択されていません</div>;
+  }
+
+  const committedRows = deriveScoreRows(selectedSet.actions);
+  const lastCommitted = committedRows.length > 0
+    ? committedRows[committedRows.length - 1]
+    : null;
+
+  const draftDisplayScores = {
+    myScore: lastCommitted ? lastCommitted.myScore : 0,
+    opponentScore: lastCommitted ? lastCommitted.opponentScore : 0
+  };
+
+  /**
+   * 下書きを確定し、serve / point を pushScore する。
+   */
+  function commitDraft(nextDraft) {
+    if (!pushScore || !match || !setId) {
+      return false;
     }
-  }, [match, setId]);
 
-  const updateAction = (actionId, newValues) => {
-    setActions(prev =>
-      prev.map(a =>
-        a._id === actionId ? { ...a, ...newValues } : a
-      )
-    );
-  };
+    const matchId = match._id;
+    const baseTimestamp = Date.now();
 
-  const toggleAce = (actionId) => {
-    setActions(prev =>
-      prev.map(a =>{
-        if (a._id !== actionId) return a
+    if (canCommitAceOrMiss(nextDraft)) {
+      pushScore({
+        matchId: matchId,
+        setId: setId,
+        action: "serve",
+        playerId: nextDraft.servePlayerId,
+        point: 0,
+        result: nextDraft.serveResult,
+        timestamp: baseTimestamp
+      });
+      setDraft(createEmptyDraft());
+      return true;
+    }
 
-        const newAce = !a.isAce
-        return {
-          ...a,
-          isAce: newAce,
-          isMiss: newAce ? false : a.isMiss
-        }
-      })
-    );
-  };
+    if (canCommitRally(nextDraft)) {
+      const isMyPoint = POINT_REASONS_MY.indexOf(nextDraft.reason) !== -1;
+      const pointResult = isMyPoint ? "my" : "opponent";
+      const pointValue = isMyPoint ? 1 : -1;
 
-  const toggleMiss = (actionId) => {
-    setActions(prev =>
-      prev.map(a =>{
-        if (a._id !== actionId) return a
+      pushScore({
+        matchId: matchId,
+        setId: setId,
+        action: "serve",
+        playerId: nextDraft.servePlayerId,
+        point: 0,
+        result: null,
+        timestamp: baseTimestamp
+      });
 
-        const newMiss = !a.isMiss
-        return {
-          ...a,
-          isMiss: newMiss,
-          isAce: newMiss ? false : a.isAce
-        }
-      })
-    );
-  };
+      pushScore({
+        matchId: matchId,
+        setId: setId,
+        action: "point",
+        playerId: nextDraft.pointPlayerId,
+        point: pointValue,
+        result: pointResult,
+        reason: nextDraft.reason,
+        timestamp: baseTimestamp + 1
+      });
 
-  // 行の動的追加関数
-  const addNewAction = () => {
-    setActions(prev => [
-      ...prev,
-      {
-        _id: crypto.randomUUID(),
-        servePlayer: null,
-        scorePlayer: null,
-        attack: null,
-        lose: null,
-        isAce: false,
-        isMiss: false,
-        myScore: 0,
-        opponentScore: 0
-      }
-    ]);
-  };
+      setDraft(createEmptyDraft());
+      return true;
+    }
 
-  if (!selectedSet) return <div className="gamebar">セットが選択されていません</div>;
+    return false;
+  }
 
-//   // 選手データをidで検索できるようにオブジェクトに変換
-//   const [playerMap, setPlayerMap] = useState({});
-//   const [selectedSet, setSelectedSet] = useState(null)
-//   const [players, setPlayers] = useState([])
-//   const activePlayers = [...start, ...bench]; // 試合に出ている選手だけ
+  /**
+   * 下書き行のフィールドを更新し、確定可能なら commit する。
+   */
+  function updateDraft(newValues) {
+    const nextDraft = {
+      ...draft,
+      ...newValues
+    };
 
-// 　useEffect(() => {
-//     const fetchPlayers = async() => {
-//       try {
-//         const res = await api.get("player/players")
-//         setPlayers(res.data)
-//       } catch(err) {
-//         console.error(err)
-//       }
-//     }
-//     fetchPlayers()
-//   }, [])
-  
-//   useEffect(() => {
-//     const map = {};
-//     players.forEach(player => {
-//       map[player._id] = player;
-//     });
-//     setPlayerMap(map);
-//   }, [players]);
+    setDraft(nextDraft);
+    commitDraft(nextDraft);
+  }
 
-//   useEffect(() => {
-//     if (match && setId) {
-//       setSelectedSet(match.sets.find(set => set._id === setId))
-//     }
-//   }, [match, setId])
+  const displayRows = committedRows.concat([
+    {
+      ...draft,
+      myScore: draftDisplayScores.myScore,
+      opponentScore: draftDisplayScores.opponentScore
+    }
+  ]);
 
-//   const [myScore, setMyScore] = useState([])
-//   const [displayScores, setDisplayScores] = useState([])
-//   const [currentScores, setCurrentScores] = useState([])
-
-//   useEffect(() => {
-//     if(selectedSet) {
-//       setMyScore(selectedSet.actions.map(item => ({...item, value:{...item.value}})))
-//       setDisplayScores(Array(selectedSet.actions.length).fill({my:0, opponent:0}))
-//       setCurrentScores(Array(selectedSet.actions.length).fill({my:0, opponent:0}))
-//     }
-//   }, [selectedSet])
-
-//     const incrementScore = (id, player) => {
-//       const newMyScore = myScore.map(item =>
-//         item._id === id ? { ...item, score: { ...item.score, [player]: item.score[player] + 1 } } : item
-//       );
-//       setMyScore(newMyScore);
-
-//       const newTotalScore = newMyScore.reduce((total, item) => (
-//         {my: total.my + item.score.my, 
-//           opponent: total.opponent + item.score.opponent}), {my: 0, opponent: 0});
-    
-//       const newDisplayScores = displayScores.map((item, index) =>
-//         index === id - 1 ? { ...item, [player]: newMyScore[id - 1].score[player] + 1 } : item
-//       );
-      
-//       setDisplayScores(newDisplayScores);
-    
-//       // 現在の合計スコアを表示する。
-//       const newCurrentScores = currentScores.map((item, index) =>
-//         index === id - 1 ? { ...item, [player]: newTotalScore[player] - newMyScore[id - 1].score[player] + 1 } : item
-//       );
-//       setCurrentScores(newCurrentScores);
-
-//       // スコアが5の倍数になったら保存
-//       if (newMyScore[id - 1].score[player] % 5 === 0) {
-//         const actionId = uuidv4()
-//         saveScore(actionId, player, newMyScore[id - 1].score[player]);
-//       }
-//     };
-  
-//   const decrementScore = (id, player) => {
-//       const newMyScore = myScore.map(item =>
-//         item._id === id && item.score[player] > 0 ? { ...item, score: { ...item.score, [player]: item.score[player] - 1 } } : item
-//       );
-//       setMyScore(newMyScore);
-    
-//       const newTotalScore = newMyScore.reduce((total, item) => (
-//         {my: total.my + item.score.my, 
-//           opponent: total.opponent + item.score.opponent}), {my: 0, opponent: 0});
-    
-//       const newDisplayScores = displayScores.map((item, index) =>
-//         index === id - 1 ? { ...item, [player]: newMyScore[id - 1].score[player] - 1 } : item
-//       );
-//       setDisplayScores(newDisplayScores);
-    
-//       // 現在の合計スコアを表示する。
-//       const newCurrentScores = currentScores.map((item, index) =>
-//         index === id - 1 ? { ...item, [player]: newTotalScore[player] - newMyScore[id - 1].score[player] } : item
-//       );
-//       setCurrentScores(newCurrentScores);
-        
-//       // スコアが5の倍数になったら保存
-//       if (newMyScore[id - 1].score[player] % 5 === 0) {
-//         const actionId = uuidv4()
-//         saveScore(id, player, newMyScore[id - 1].score[player]);
-//       }
-//     }
-
-//   const saveScore = async (id, player, score) => {
-//       const response = await api.put(`sets/${id}`, {
-//         team: player,
-//         change: score
-//       });
-    
-//       // 必要に応じてレスポンスを処理します。
-//     };
-
-//     // actionsに関する設定
-//     const [actions, setActions] = useState([])
-//     const handleNewAction = (newAction) => {
-//       setActions([...actions, newAction])
-//     }
   return (
-    <div className="gamebar">
-      {/* 1段目（大ヘッダー） */}
-      <div className="row headerRow">
+    <div className="gamebar" id="scorebar">
+      <div className="row headerRow" id="scorebar-header">
         <div className="cell serveHeader">サーブ</div>
         <div className="cell reasonHeader">決定要因</div>
         <div className="cell scoreHeader">スコア</div>
       </div>
 
-      {/* 2段目（小ヘッダー） */}
-      <div className="row subHeaderRow">
+      <div className="row subHeaderRow" id="scorebar-subheader">
         <div className="cell serveSub">
           <div>背番号</div>
           <div>エース</div>
@@ -223,20 +195,18 @@ export default function Scorebar({ match, setId, start, bench, pushScore }) {
           <div>相</div>
         </div>
       </div>
-        {actions.map((action, index) =>(
+
+      {displayRows.map(function (row, index) {
+        return (
           <ScoreDetail
-            key={action._id}
-            action={action}
-            index={index}
-            actionsLength={actions.length}
-            start = {start}
-            bench = {bench}
-            updateAction={updateAction}
-            toggleAce={toggleAce}
-            toggleMiss={toggleMiss}
-            addNewAction={addNewAction}
+            key={row.key}
+            row={row}
+            start={start}
+            bench={bench}
+            onUpdateDraft={updateDraft}
           />
-        ))}
+        );
+      })}
     </div>
   )
 }

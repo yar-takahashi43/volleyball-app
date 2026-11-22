@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react'
 import "../playerList/PlayerList.css"
 import MatchListTop from './MatchListTop'
 import "../home/Container.css"
-import axios from 'axios'
 import { Link } from 'react-router-dom'
+import api from '../../Api'
 
 export default function MatchList() {
 
@@ -12,7 +12,7 @@ export default function MatchList() {
   useEffect(() => {
     const fetchDates = async () => {
       try {
-        const res = await axios.get('match/matches')
+        const res = await api.get('/match/matches')
         setDates(Object.keys(res.data))
       } catch (err) {
         console.log(err)
@@ -29,11 +29,8 @@ export default function MatchList() {
         <MatchListTop />
             <div className="playerList">
                 {dates.map((date) => (
-                    <Link to={`/matches/${date}`}>
-                      <div
-                        key={date}
-                        // onClick={() => fetchMatches(date)}
-                      >{date}</div>
+                    <Link key={date} id={`match-date-link-${date}`} to={`/matches/${date}`}>
+                      <div>{date}</div>
                     </Link>
                 ))}
             </div>

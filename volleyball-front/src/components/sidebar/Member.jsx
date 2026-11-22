@@ -1,10 +1,6 @@
-import React, {useState, useEffect, useCallback} from 'react'
-import { useMemo } from 'react'
-// import { Players } from '../../dummyData'
+import React, {useState, useEffect, useMemo} from 'react'
 import "./Sidebar.css"
-import axios from 'axios'
-import Select from 'react-select';
-// import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import api from '../../Api'
 
 export default function Member({
     member, matchId, setId,
@@ -50,23 +46,22 @@ export default function Member({
     const columns1 = useMemo(() => ColumnStarting, []);
     const columns2 = useMemo(() => ColumnBench, []);
 
+    /**
+     * 選択された選手を start / bench から探し、入替対象としてセットする。
+     */
     const handlePlayerChange = (selectedOption) => {
-        console.log("selectedOption.value:", selectedOption.value, typeof selectedOption.value);
-        console.log("start[0]:", start[0]);   // ★ ここに入れる
-    console.log("bench[0]:", bench[0]);   // ★ bench も見たい
         const value = selectedOption.value
-        const player = 
-            start.find(player => player._id === value) || 
-            bench.find(player => player._id === value);
-        console.log("player structure:", player); 
+        const player =
+            start.find(player => player.playerId === value) ||
+            bench.find(player => player.playerId === value);
         setSeletedPlayer(player);
     }
-    
+
     useEffect(() => {
         // ①selectedPlayer が null のときは何もしない
         if (!selectedPlayer) return;
-        const playerId = selectedPlayer._id
-        const isStarting = start.some(player => player._id === playerId)
+        const playerId = selectedPlayer.playerId
+        const isStarting = start.some(player => player.playerId === playerId)
 
         // ②先発メンバーがすでに7名いる場合は何もしない
         if (!isStarting && start.length >= 7) {
@@ -75,52 +70,30 @@ export default function Member({
         }
 
         // ③ 移動元のプレイヤーを取得
-        const movedFromStart = start.find(p => p._id === playerId);
-        const movedFromBench = bench.find(p => p._id === playerId);
+        const movedFromStart = start.find(p => p.playerId === playerId);
+        const movedFromBench = bench.find(p => p.playerId === playerId);
 
         // ④ 新しい start / bench を作成
-        const newStart = isStarting 
-            ? start.filter(player => player._id !== playerId) 
+        const newStart = isStarting
+            ? start.filter(player => player.playerId !== playerId)
             : [...start, movedFromBench]
-        const newBench = isStarting 
-            ? [...bench, movedFromStart] 
-            : bench.filter(player => player._id !== playerId);
-        console.log("newStart: " + newStart)
-        console.log("newBench: " + newBench)
+        const newBench = isStarting
+            ? [...bench, movedFromStart]
+            : bench.filter(player => player.playerId !== playerId);
 
         // ⑤ UI 更新
         setStart(newStart)
         setBench(newBench)
         setSeletedPlayer(null)
 
-        // if (start.length === 0 && bench.length === 0) return;
-
-        // let queue = Promise.resolve()
-    
-        // const updatePlayerStatus = () => {
-        //     queue = queue.then(async() => {
-        //         try {
-        //             await axios.put(`/set/match/${matchId}/set/${setId}/starPlayer`, 
-        //             {
-        //                 starPlayerId: start,
-        //                 benchMemId: bench
-        //             })
-        //             console.log("bench: " + bench)
-        //         } catch (err) {
-        //             console.error(err)
-        //         }
-        //     })
-        // }
-        // updatePlayerStatus()
-
-        axios.put(`/set/match/${matchId}/set/${setId}/starPlayer`, {
-            starPlayerIds: newStart.map(p => p._id),
-            benchMemIds: newBench.map(p => p._id)
+        api.put(`/set/match/${matchId}/set/${setId}/starPlayer`, {
+            starPlayerIds: newStart.map(p => p.playerId),
+            benchMemIds: newBench.map(p => p.playerId)
         }).catch(err => console.error(err))
     }, [selectedPlayer])
 
     return (
-    <div className='memberContainer'>
+    <div className='memberContainer' id="memberContainer">
         <div className="startingTitle">
             <h3>スターティング</h3>
         </div>
@@ -136,10 +109,12 @@ export default function Member({
             <tbody>
             {start && start.length >= 0 && start.map((player, index) => {
                 return (
-                    <tr key={index}>
+                    <tr key={player.playerId || index}>
                         <td>
-                            <button onClick={() => handlePlayerChange({
-                                value: player._id, 
+                            <button
+                                id={`member-move-to-bench-${player.playerId}`}
+                                onClick={() => handlePlayerChange({
+                                value: player.playerId,
                                 label: player.nickname})}>
                             ベンチへ
                             </button>
@@ -169,10 +144,12 @@ export default function Member({
             <tbody>
                 {bench && bench.length >= 0 && bench.map((player, index) => {
                     return (
-                    <tr key={index}>
+                    <tr key={player.playerId || index}>
                         <td>
-                            <button onClick={() => handlePlayerChange({
-                                value: player._id, 
+                            <button
+                                id={`member-move-to-start-${player.playerId}`}
+                                onClick={() => handlePlayerChange({
+                                value: player.playerId,
                                 label: player.nickname})}>
                             先発に追加
                             </button>

@@ -1,36 +1,38 @@
 .memberContainer{
     background-color: #f8fcff;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .startingTitle,
 .benchTitle{
-    margin: 1% 0 0% 5%;
-    width: 300px;
+    margin: 8px 0 4px 8px;
+    width: auto;
+    max-width: 100%;
 }
 
 .startingTable,
 .benchTable {
-  margin: 0% 0 2% 0;
-  width: 300px;
-} 
+  margin: 0 0 8px 0;
+  width: 100%;
+}
 
 .startingTable table,
 .benchTable  table {
     border-collapse: collapse;
-    margin: 0% 0 0% 5%;
-    width: 100%; /* 幅を最大化 */
+    margin: 0 0 0 8px;
+    width: calc(100% - 8px);
+    table-layout: fixed;
 }
-  
+
 .startingTable th,
 .startingTable td,
 .benchTable th,
 .benchTable td {
     align-items: center;
     text-align: center;
-    font-size: large;
+    font-size: 15px;
     border: 1px solid black;
-    padding: 10px;
-    white-space: nowrap; /* テキストの折り返しを防ぐ */
+    padding: 10px 8px;
+    white-space: nowrap;
 }
-  

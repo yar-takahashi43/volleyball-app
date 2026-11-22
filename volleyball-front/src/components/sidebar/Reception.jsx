@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useMemo } from 'react'
 import "./Sidebar.css"
-import axios from 'axios'
 
 export default function Reception({
     // reception, setReception, 
@@ -27,7 +26,7 @@ export default function Reception({
             .filter(a => a.action === "reception")
             .forEach(a => {
                 if (counts[a.result] !== undefined) {
-                counts[a.result] += 1;
+                counts[a.result] += a.point;
                 }
             });
         return counts;
@@ -57,6 +56,7 @@ export default function Reception({
             matchId,
             setId,
             action: "reception",
+            playerId: null,
             result: grade,
             point: 1,
             timestamp: Date.now()
@@ -79,6 +79,7 @@ export default function Reception({
                 matchId,
                 setId,
                 action: "reception",
+                playerId: null,
                 result: grade,
                 point: -1,
                 timestamp: Date.now()

@@ -1,87 +1,101 @@
-/* 1行全体 */
 .detailRow {
-  display: flex;
-  width: 100%;
-  border: 1px solid #ccc;
-  margin: 2px 0;
+  margin: 0;
 }
 
-/* 各ブロック */
-.serveBlock,
-.reasonBlock,
-.scoreBlock {
+.serveCell,
+.reasonCell,
+.scoreCell {
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-left: 1px solid #ccc;
-}
-
-/* 幅の比率（自由に調整可） */
-.serveBlock {
-  flex: 4;
-}
-
-.reasonBlock {
-  flex: 5;
-}
-
-.scoreBlock {
-  flex: 3;
   justify-content: space-around;
+  gap: 8px;
+  min-width: 0;
 }
 
-/* 最初のブロックは左線なし */
-.detailRow > div:first-child {
-  border-left: none;
+.scoreCell {
+  justify-content: space-evenly;
+  font-size: 16px;
+  font-weight: 700;
 }
 
-/* Select の幅調整 */
-.serveSelect {
-  width: 40px;
-  margin-right: 6px;
-}
-
-.scoreSelect {
-  width: 80px;
-  margin-right: 6px;
-}
-
-.bigCheckbox {
-  width: 22px;
-  height: 22px;
-  transform: scale(1.4);
-  cursor: pointer;
-}
-
-.serveCell input[type="checkbox"] {
-  margin: 0 6px;
-}
-
-.serveCell {
-  display: flex;
-  align-items: center;     /* ← 縦位置を揃える */
-  justify-content: space-around;
-}
-
+/* 選手セレクト: 背番号+表示名が読める幅。iOS ズーム防止で 16px */
 .selectPlayer {
-  width: 100%;
+  width: 132px;
   min-width: 120px;
+  max-width: 150px;
+  flex-shrink: 0;
+  min-height: 40px;
+  font-size: 16px;
+  touch-action: manipulation;
 }
 
-/* 得点・失点の select */
+/* 得点・失点セレクト（下書き用） */
 .selectAttack {
   width: 120px;
   min-width: 100px;
+  max-width: 140px;
+  flex: 1;
+  min-height: 40px;
+  font-size: 16px;
+  touch-action: manipulation;
 }
 
-/* 名前・得点・失点の ValueContainer の overflow を許可 */
-.selectAttack .css-1fdsijx-ValueContainer,
-.selectPlayer .css-1fdsijx-ValueContainer {
-  overflow: visible !important;
+/* 確定行の全文表示（サイドバー同等以上） */
+.scoreReadonlyText {
+  display: block;
+  width: 120px;
+  min-width: 100px;
+  max-width: 140px;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+  padding: 2px 0;
 }
 
-/* react-select の高さを統一 */
-.selectAttack .css-13cymwt-control,
-.selectPlayer .css-13cymwt-control {
-  min-height: 32px;
+.scoreReadonlyPlayer {
+  display: block;
+  width: 132px;
+  min-width: 120px;
+  max-width: 150px;
+  flex-shrink: 0;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* タブレット向けタッチターゲット */
+.bigCheckbox {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  transform: scale(1.05);
+  touch-action: manipulation;
+}
+
+.serveCell input[type="checkbox"] {
+  margin: 0;
+}
+
+@media (min-width: 900px) and (max-width: 1366px) {
+  .selectPlayer,
+  .selectAttack {
+    min-height: 44px;
+  }
+
+  .bigCheckbox {
+    width: 30px;
+    height: 30px;
+  }
+
+  .scoreCell {
+    font-size: 18px;
+  }
 }

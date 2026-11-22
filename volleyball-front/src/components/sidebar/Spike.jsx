@@ -1,12 +1,99 @@
-import React, { useState, useEffect } from 'react'
-import { useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import "./Sidebar.css"
-import axios from 'axios'
-// import { useTable } from 'react-table'
-import { Players } from '../../dummyData'
-import { Select } from '@mui/material'
 
-export default function Spike({actions, setSpike, setId, matchId, start, bench, pushScore}) {
+const SPIKE_SLOT_COUNT = 5;
+
+/**
+ * start / bench から playerId に対応する nickname を探す。
+ */
+function findNicknameByPlayerId(playerId, start, bench) {
+    if (!playerId) {
+        return null;
+    }
+
+    const fromStart = (start || []).find(function (player) {
+        return player.playerId === playerId;
+    });
+
+    if (fromStart) {
+        return fromStart.nickname;
+    }
+
+    const fromBench = (bench || []).find(function (player) {
+        return player.playerId === playerId;
+    });
+
+    if (fromBench) {
+        return fromBench.nickname;
+    }
+
+    return null;
+}
+
+/**
+ * actions から spike の playerId を出現順で一意に取り出す。
+ */
+function collectSpikePlayerIds(actions) {
+    const playerIds = [];
+    const seen = new Set();
+
+    (actions || []).forEach(function (action) {
+        if (action.action !== "spike" || !action.playerId) {
+            return;
+        }
+
+        if (seen.has(action.playerId)) {
+            return;
+        }
+
+        seen.add(action.playerId);
+        playerIds.push(action.playerId);
+    });
+
+    return playerIds;
+}
+
+/**
+ * 空スロットへ、まだ選択されていない spike 選手を埋める。
+ * 既存の手動選択は維持する（リロード時は全スロット空なので actions から復元される）。
+ */
+function fillEmptySlotsFromActions(prevSelected, actions) {
+    const selectedIds = new Set(
+        prevSelected
+            .map(function (slot) {
+                return slot.playerId;
+            })
+            .filter(Boolean)
+    );
+
+    const missingIds = collectSpikePlayerIds(actions).filter(function (playerId) {
+        return !selectedIds.has(playerId);
+    });
+
+    if (missingIds.length === 0) {
+        return prevSelected;
+    }
+
+    const nextSelected = prevSelected.map(function (slot) {
+        return { playerId: slot.playerId };
+    });
+
+    missingIds.forEach(function (playerId) {
+        const emptyIndex = nextSelected.findIndex(function (slot) {
+            return !slot.playerId;
+        });
+
+        if (emptyIndex === -1) {
+            return;
+        }
+
+        nextSelected[emptyIndex] = { playerId: playerId };
+    });
+
+    return nextSelected;
+}
+
+export default function Spike({actions, setId, matchId, start, bench, pushScore}) {
     const Column = [
         {
             header: "選手",
@@ -19,9 +106,21 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
     ]
     const columns = useMemo(() => Column, []);
 
-    // selectedPlayersの初期値をspikeに設定
-    const [selectedPlayers, setSelectedPlayers] = useState(Array(5).fill({playerId: null}))
-    // const [selectedPlayers, setSelectedPlayers] = useState(spike)
+    // selectedPlayers の初期値（5スロット）
+    const [selectedPlayers, setSelectedPlayers] = useState(
+        Array.from({ length: SPIKE_SLOT_COUNT }, function () {
+            return { playerId: null };
+        })
+    )
+
+    /**
+     * 永続化された spike actions から選手スロットを復元する。
+     */
+    useEffect(() => {
+        setSelectedPlayers(function (prev) {
+            return fillEmptySlotsFromActions(prev, actions);
+        });
+    }, [actions]);
 
     const spikeCounts = useMemo(() => {
         const counts = {};
@@ -33,42 +132,29 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
         return counts;
     }, [actions]);
 
-    const data = useMemo(() => { 
+    const data = useMemo(() => {
         return selectedPlayers.map((player) => ({
-            playerId: player.nickname, 
+            nickname: findNicknameByPlayerId(player.playerId, start, bench),
             spikeScore: spikeCounts[player.playerId] || 0
         }))
-    }, [selectedPlayers, spikeCounts]);
+    }, [selectedPlayers, spikeCounts, start, bench]);
 
-    // const data = selectedPlayers.map((p) => ({
-    //     playerId: p.playerId,
-    //     spikeScore: spikeCounts[p.playerId] || 0
-    // }));
-
-    // const handlePlayerChange = (index, e) => {
-    //     const newSelectedPlayers = [...selectedPlayers]
-    //     newSelectedPlayers[index] = {...newSelectedPlayers[index], playerId: e.target.value}
-    //     setSelectedPlayers(newSelectedPlayers)
-    // }
+    /**
+     * スパイク行の選手セレクトを更新する。
+     */
     const handlePlayerChange = (index, e) => {
         const newSelected = [...selectedPlayers]
-        newSelected[index] = {playerId: e.target.value}
+        newSelected[index] = {playerId: e.target.value || null}
         setSelectedPlayers(newSelected)
     }
 
+    /**
+     * 選択中選手のスパイク打数を +1 する。
+     */
     const incrementSpike = (index) => {
         const playerId = selectedPlayers[index]?.playerId
-        // if (selectedPlayers[index]) {
         if (!playerId) return
-        
-        // // UIの表示更新
-        // const newSelectedPlayers = [...selectedPlayers]
-        // // newSelectedPlayers[index].spikeScore = (newSelectedPlayers[index].spikeScore || 0) + 1
-        // newSelectedPlayers[index].spikeScore += 1
-        // setSelectedPlayers(newSelectedPlayers)
-        // // }
 
-        // pushScoreのアクションログ
         pushScore({
             matchId,
             setId,
@@ -79,57 +165,27 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
         })
     };
 
+    /**
+     * 選択中選手のスパイク打数を -1 する。
+     */
     const decrementSpike = (index) => {
         const playerId = selectedPlayers[index]?.playerId
         if (!playerId) return
 
-        // if (selectedPlayers[index] && selectedPlayers[index].spikeScore > 0) {
-        //     const newSelectedPlayers = [...selectedPlayers]
-        //     newSelectedPlayers[index].spikeScore -= 1
-        //     setSelectedPlayers(newSelectedPlayers)
-
         if (data[index].spikeScore <= 0) return
 
-            // pushScoreのアクションログ
-            pushScore({
-                matchId,
-                setId,
-                action: "spike",
-                playerId,
-                point: -1,
-                timestamp: Date.now()
-            })
-        // }
+        pushScore({
+            matchId,
+            setId,
+            action: "spike",
+            playerId,
+            point: -1,
+            timestamp: Date.now()
+        })
     }
 
-    // useEffect(() => {
-    //     const fetchSpike = async () => {
-    //         try {
-    //             const res = await axios.get(`/set/match/${matchId}/set/${setId}`);
-    //             setSelectedPlayers(res.data.spike);
-    //         } catch (err) {
-    //             console.error(err);
-    //         }
-    //     }
-    //     fetchSpike();
-    // }, []);    
-
-    // useEffect(() => {
-    //     const updateSpike = async () => {
-    //         try {
-    //             await axios.put(`/set/match/${matchId}/set/${setId}/spike`, 
-    //             {
-    //                 spike: selectedPlayers
-    //             })
-    //         } catch (err) {
-    //             console.error(err);
-    //         }
-    //     }
-    //     updateSpike()
-    // } , [selectedPlayers])
-
     return (
-        <div className='spikeContainer'>
+        <div className='spikeContainer' id="spikeContainer">
             <div className="spikeTitle">
                 <h3>スパイク統計</h3>
             </div>
@@ -137,8 +193,6 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
                 <table>
                     <thead>
                         <tr>
-                            {/* <th>選手</th>
-                            <th>打数</th> */}
                             {columns.map((column, index) => (
                             <th key={index}>{column.header}</th>
                             ))}
@@ -148,21 +202,23 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
                         {data.map((row, index) => (
                             <tr key={index}>
                                 <td>
-                                    <select 
-                                        // value={selectedPlayers[index] ? selectedPlayers[index].playerId : ""} 
-                                        value={selectedPlayers[index]?.playerId ?? ""} 
+                                    <select
+                                        id={`spike-player-select-${index}`}
+                                        value={selectedPlayers[index]?.playerId ?? ""}
                                         onChange={(e) => handlePlayerChange(index, e)}>
-                                        {/* <option value="">選手選択</option>
-                                            {start
-                                                .filter(player => !selectedPlayers.includes(player))
-                                                .map(player => (
-                                                    <option key={player.playerId} value={player.playerId}>
-                                                        {player.num}番 {player.nickname}
-                                                    </option>
-                                                ))} */}
                                         <option value="">選手選択</option>
-                                            {start
-                                                // .filter(player => !selectedPlayers.includes(player))
+                                            {(start || [])
+                                                .filter(function (player) {
+                                                    const isSelectedElsewhere = selectedPlayers.some(
+                                                        function (slot, slotIndex) {
+                                                            if (slotIndex === index) {
+                                                                return false;
+                                                            }
+                                                            return slot.playerId === player.playerId;
+                                                        }
+                                                    );
+                                                    return !isSelectedElsewhere;
+                                                })
                                                 .map(player => (
                                                     <option key={player.playerId} value={player.playerId}>
                                                         {player.num}番 {player.nickname}
@@ -171,11 +227,13 @@ export default function Spike({actions, setSpike, setId, matchId, start, bench, 
                                     </select>
                                 </td>
                                 <td>
-                                    <button 
+                                    <button
+                                        id={`spike-minus-${index}`}
                                         className='minusButton'
                                         onClick={() => decrementSpike(index)}>-</button>
                                     {row.spikeScore}
                                     <button
+                                        id={`spike-plus-${index}`}
                                         className='addButton'
                                         onClick={() => incrementSpike(index)}>+</button>
                                 </td>

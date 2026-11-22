@@ -1,87 +1,65 @@
 import React from 'react'
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import ReplayCircleFilledIcon from '@mui/icons-material/ReplayCircleFilled';
 import "../../components/player/Player.css"
 import api from '../../Api';
-import { useState } from 'react';
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
-export default function Game({match, date}) {
+export default function Game({ match, date, opponentName }) {
 
-    const[popup, setPopup] = useState(false)
-    const[updatePopup, setUpdatePopup] = useState(false)
-    const[updatedOpponent, setUpdatedOpponent] = useState(false)
+    const [popup, setPopup] = useState(false)
 
+    /**
+     * 試合を削除する。
+     */
     const handleDelete = async () => {
       try {
         await api.delete(`match/${match._id}`)
-        console.log("削除が完了しました。")
+        window.location.reload()
       } catch (err) {
         console.log("削除中にエラーが発生しました。" ,err)
       }
       setPopup(false)
     }
 
-    const handleUpdate = async () => {
-      try {
-        await api.put(`match/${match._id}`, updatedOpponent)
-        console.log("更新が完了しました。")
-      } catch (err) {
-        console.log("更新中にエラーが発生しました。" ,err)
-      }
-      setUpdatePopup(false)
-    }
-    console.log(match)
-
   return (
-    <li className="playerList">
+    <li className="playerList" id={`match-list-item-${match._id}`}>
         <div className="playerListContainer">
             <div className="eachplayer">
-                <span className="playerNum">
-                    日付：{date}
-                </span>
-                <span className="playerName">
-                    対戦相手：{match.opponentId}
-                </span>
+                <Link
+                  id={`match-link-${match._id}`}
+                  to={`/match/${match._id}`}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flex: 1 }}
+                >
+                  <span className="playerNum">
+                      日付：{date}
+                  </span>
+                  <span className="playerName">
+                      対戦相手：{opponentName}
+                  </span>
+                </Link>
                 <div className="changePlayer">
-                    <PersonRemoveIcon 
-                        className='deletePlayer' 
+                    <PersonRemoveIcon
+                        className='deletePlayer'
+                        id={`match-delete-icon-${match._id}`}
                         htmlColor='green'
                         onClick={() => setPopup(true)}
-                      />{popup && (
-                          <div className="popup">
-                              <p>本当に削除しますか？</p>
-                              <p>削除したら戻れませんよ？</p>
-                              <button className="delete" onClick={handleDelete}>OK</button>
-                              <button className="cancel" onClick={() => setPopup(false)}>キャンセル</button>
+                      />
+                    {popup && (
+                      <div className="modalOverlay" id={`match-delete-overlay-${match._id}`} onClick={() => setPopup(false)}>
+                          <div className="popup" onClick={(e) => e.stopPropagation()}>
+                              <div className="alert">
+                                <p className="popupTitle">本当に削除しますか？</p>
+                                <p className="popupMessage">削除したら元に戻せません。</p>
+                              </div>
+                              <div className="popupActions">
+                                <button type="button" className="popupButton popupButtonDanger" id={`match-delete-ok-${match._id}`} onClick={handleDelete}>削除する</button>
+                                <button type="button" className="popupButton popupButtonSecondary" id={`match-delete-cancel-${match._id}`} onClick={() => setPopup(false)}>キャンセル</button>
+                              </div>
                           </div>
-                      )}
+                      </div>
+                    )}
                     <span className='playerListText'>削除</span>
-
-                    <ReplayCircleFilledIcon className='updateOpponent' 
-                          htmlColor='blue'
-                          onClick={() => setUpdatePopup(true)}
-                      />{updatePopup && (
-                          <div className="popup">
-                              <p>対戦相手情報を更新します。</p>
-                                <input 
-                                  type="text" 
-                                  className="opponentInfo"
-                                  value={updatedOpponent.name}
-                                  placeholder='名前'
-                                  onChange={(e) => setUpdatedOpponent({...updatedOpponent, name: e.target.value})}
-                                />
-                                <input 
-                                  type="text" 
-                                  className="opponentInfo"
-                                  value={updatedOpponent.label}
-                                  placeholder='表示名'
-                                  onChange={(e) => setUpdatedOpponent({...updatedOpponent, label: e.target.value})}
-                                />
-                              <button className="update" onClick={handleUpdate}>OK</button>
-                              <button className="updateCancel" onClick={() => setUpdatePopup(false)}>キャンセル</button>
-                          </div>
-                      )}
-                    <span className='playerListText'>更新</span>
                 </div>
             </div>
         </div>

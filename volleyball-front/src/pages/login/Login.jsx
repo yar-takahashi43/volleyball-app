@@ -1,15 +1,18 @@
 import React, { useContext, useRef } from 'react'
 import "./Login.css"
+import { Link } from 'react-router-dom'
 import { loginCall } from '../../actionCalls'
 import { AuthContext } from '../../state/AuthContext'
 
 export default function Login() {
   const email = useRef()
   const password = useRef()
-  const {user, isFetching, error, dispatch} = useContext(AuthContext)
+  const { isFetching, error, dispatch } = useContext(AuthContext)
 
+  /**
+   * ログインフォーム送信を処理する。
+   */
   const handleSubmit = (e) => {
-    // ログインボタンを押してもリロードされなくなる
     e.preventDefault()
     loginCall({
       email: email.current.value,
@@ -17,34 +20,50 @@ export default function Login() {
     }, dispatch)
   }
 
-  console.log(user)
-
   return (
-    <div className="login">
+    <div className="login" id="loginPage">
         <div className='loginWrapper'>
             <div className="loginImg">
                 <h3 className='loginLogo'>スコア管理シート</h3>
-                <span className="loginDesc">快適なチームマネジメントを支えますわよ</span>
-                <form className="loginBox" onSubmit={(e) => handleSubmit(e)}>
+                <span className="loginDesc">試合のスコアを記録・管理</span>
+                <form className="loginBox" id="loginForm" onSubmit={(e) => handleSubmit(e)}>
                     <p className="loginMsg">ログインはこちら</p>
-                    <input 
-                      type="email" 
-                      className="loginInput" 
-                      placeholder='Eメール' 
+                    <input
+                      id="loginEmail"
+                      type="email"
+                      className="loginInput"
+                      placeholder='Eメール'
                       required
                       ref={email}
                     />
-                    <input 
-                      type="password" 
-                      className="loginInput" 
-                      placeholder='パスワード' 
+                    <input
+                      id="loginPassword"
+                      type="password"
+                      className="loginInput"
+                      placeholder='パスワード'
                       required
                       minLength="6"
                       ref={password}
                     />
-                    <button className="loginButton">ログイン</button>
-                    <span className="loginForgot">パスワードを忘れた愚か者へ</span>
-                    <button className="loginRegisterButton">アカウント作成</button>
+                    {error ? (
+                      <p className="loginError" id="loginErrorMessage">ログインに失敗しました</p>
+                    ) : null}
+                    <button
+                      id="loginSubmitButton"
+                      className="loginButton"
+                      type="submit"
+                      disabled={isFetching}
+                    >
+                      {isFetching ? "ログイン中..." : "ログイン"}
+                    </button>
+                    <Link
+                      to="/register"
+                      id="loginToRegisterLink"
+                      className="loginRegisterButton"
+                      style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      アカウント作成
+                    </Link>
                 </form>
             </div>
         </div>

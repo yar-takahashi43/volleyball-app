@@ -2,6 +2,7 @@ const router = require("express").Router()
 const Match = require("../models/Match")
 const Set = require("../models/Set")
 const Player = require("../models/Player");
+const { serializeMatch } = require("../utils/serializeMember")
 
 // 選手全員のIDを取得する
 async function getAllPlayerId(){
@@ -20,8 +21,6 @@ router.post("/register", async (req, res) => {
         const newMatch = new Match({
             opponentId: null,
         });
-        // 新しいSetを作成し、Matchのsetsに追加
-        // const allPlayerId = await getAllPlayerId()
         const players = await Player.find({}, "_id num nickname");
         // 初期のSetを作成
         const initialSet = new Set({
@@ -39,21 +38,12 @@ router.post("/register", async (req, res) => {
         newMatch.currentSetId = initialSet._id;
         // Matchを保存
         await newMatch.save();
-        // const savedMatch = await newMatch.save();
-        // 新規作成したMatchのIDを取得
-        // const matchId = savedMatch._id
 
-        // ★★★ ここで populate して返す（これが今回の本命）
-        const populatedMatch = await Match.findById(newMatch._id)
-            .populate({
-                path: "sets",
-                populate: [
-                    { path: "starPlayer.playerId", model: "Player" },
-                    { path: "benchMem.playerId", model: "Player" }
-                ]
-            });
+        // sets のみ populate（playerId の nested populate はしない）
+        const matchWithSets = await Match.findById(newMatch._id)
+            .populate("sets");
 
-        res.status(200).json(populatedMatch);
+        res.status(200).json(serializeMatch(matchWithSets));
     } catch (err) {
         res.status(500).json(err);
     }
@@ -133,18 +123,15 @@ router.get("/matches/:date", async (req, res) => {
 // 試合の詳細を取得する
 router.get("/:id", async (req, res) => {
     try {
+        // sets のみ populate（playerId の nested populate はしない）
         const match = await Match.findById(req.params.id)
-            // .exec();
-            .populate({
-                path: "sets",
-                populate: [
-                    {path: "starPlayer.playerId", model: "Player"},
-                    {path: "benchMem.playerId", model: "Player"}
-                ]
-            })
-            // console.log("matchのベンチ選手情報は次のとおり。: " + match.sets[0].benchMem)
-            // console.log("match　: " + match)
-        res.status(200).json(match);
+            .populate("sets")
+
+        if (!match) {
+            return res.status(404).json({ message: "match not found" });
+        }
+
+        res.status(200).json(serializeMatch(match));
     } catch (err) {
         console.error(err);
         res.status(500).json(err);

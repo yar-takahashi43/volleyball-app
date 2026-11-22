@@ -1,8 +1,125 @@
 import React from 'react'
 import Score from '../score/Score';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../Api';
+import { mergeSetIntoMatch } from '../../utils/mergeSetIntoMatch';
+import { normalizeMembers } from '../../utils/normalizeMember';
+
+/**
+ * UI / buffer 用の action から batch 送信用フィールドだけを取り出す。
+ */
+function toBatchScore(action) {
+  const score = {
+    action: action.action,
+    playerId: action.playerId,
+    point: action.point,
+    timestamp: action.timestamp
+  };
+
+  if (action.result !== undefined) {
+    score.result = action.result;
+  }
+
+  if (action.reason !== undefined) {
+    score.reason = action.reason;
+  }
+
+  return score;
+}
+
+/**
+ * 楽観的に append した actions を、失敗した buffer 分だけ取り除く。
+ */
+function rollbackOptimisticActions(match, setId, failedBuffer) {
+  if (!match || !setId || !failedBuffer || failedBuffer.length === 0) {
+    return match;
+  }
+
+  const failedTimestamps = failedBuffer.map(function (item) {
+    return item.timestamp;
+  });
+
+  const updatedSets = match.sets.map(function (setItem) {
+    if (setItem._id !== setId) {
+      return setItem;
+    }
+
+    const nextActions = [...(setItem.actions || [])];
+
+    failedTimestamps.forEach(function (timestamp) {
+      const removeIndex = nextActions.map(function (entry) {
+        return entry.timestamp;
+      }).lastIndexOf(timestamp);
+
+      if (removeIndex !== -1) {
+        nextActions.splice(removeIndex, 1);
+      }
+    });
+
+    return {
+      ...setItem,
+      actions: nextActions
+    };
+  });
+
+  return {
+    ...match,
+    sets: updatedSets
+  };
+}
+
+/**
+ * ローカル match の該当 set.actions に action を append する。
+ */
+function appendActionToMatch(match, setId, action) {
+  if (!match || !setId) {
+    return match;
+  }
+
+  const scoreToAppend = toBatchScore(action);
+
+  const updatedSets = match.sets.map(function (setItem) {
+    if (setItem._id !== setId) {
+      return setItem;
+    }
+
+    return {
+      ...setItem,
+      actions: [...(setItem.actions || []), scoreToAppend]
+    };
+  });
+
+  return {
+    ...match,
+    sets: updatedSets
+  };
+}
+
+/**
+ * セットのスタメン・ベンチを Sidebar 用 state に反映する。
+ */
+function applySetToSidebar(setItem, setStart, setBench) {
+  if (!setItem) {
+    return;
+  }
+
+  setStart(normalizeMembers(setItem.starPlayer));
+  setBench(normalizeMembers(setItem.benchMem));
+}
+
+/**
+ * match.sets から setId に一致するセットを探す。
+ */
+function findSetById(match, setId) {
+  if (!match || !match.sets || !setId) {
+    return null;
+  }
+
+  return match.sets.find(function (setItem) {
+    return String(setItem._id) === String(setId);
+  }) || null;
+}
 
 export default function Match() {
 
@@ -13,48 +130,29 @@ export default function Match() {
     const [start, setStart] = useState([])
     const [bench, setBench] = useState([])
     const [opponent, setOpponent] = useState([])
-    // const currentSet = match.sets[selectedSetId]
+    const [, setScoreBuffer] = useState([]);
+    const isFlushingRef = useRef(false);
 
   useEffect(() => {
       const fetchMatch = async () => {
           try {
-            // console.log("=== FETCH START ===");
               const res = await api.get(`/match/${matchId}`, {
                 headers: {"Cache-Control": "no-cache"}
               });
-              // console.log("RAW RESPONSE:", res.data);
               const match = res.data
-
-      //         console.log("match.sets:", match.sets);
-      // if (match.sets) {
-      //   console.log("match.sets.length:", match.sets.length);
-      //   console.log("match.sets[0]:", match.sets[0]);
-      //   console.log("match.sets[0].benchMem:", match.sets[0]?.benchMem);
-      //   console.log("match.sets[0].starPlayer:", match.sets[0]?.starPlayer);
-      // } else {
-      //   console.log("match.sets is undefined");
-      // }
 
               // ★ sets が undefined の場合は state を更新しない
               if (!match.sets || match.sets.length === 0) {
                 console.warn("sets がまだ取得できていないので待機:", match);
                 return;
               }
-              // const sets = await Promise.all(match.sets.map(async setObj =>{
-              //   const setRes = await api.get(`/set/match/${matchId}/set/${setObj._id}`)
-              //   return setRes.data
-              // }))
-              // match.sets = sets
               setMatch(match)
-              // setSelectedSetId(sets[0]._id)
-              // setBench(sets[0].benchMem)
-              // setStart(sets[0].starPlayer)
-              const firstSet = match.sets[0]
-              setSelectedSetId(firstSet._id)
-              setBench(firstSet.benchMem)
-              setStart(firstSet.starPlayer)
-              console.log(firstSet)
-              console.log(firstSet.benchMem)
+
+              // リロード時は currentSetId を優先（なければ先頭セット）
+              const initialSet =
+                findSetById(match, match.currentSetId) || match.sets[0];
+              setSelectedSetId(initialSet._id)
+              applySetToSidebar(initialSet, setStart, setBench)
           } catch (err) {
               console.error(err);
           }
@@ -74,107 +172,223 @@ export default function Match() {
   fetchOpponents()
   }, [])
 
+  /**
+   * 表示中セットを切り替える。サーバーの最新 set を取り込み、currentSetId を保存する。
+   */
+  const selectSetById = async (setId) => {
+    if (!matchId || !setId) {
+      return;
+    }
 
-  // ① バッファ本体
-  const [scoreBuffer, setScoreBuffer] = useState([]);
+    try {
+      await api.put(`/match/${matchId}`, {
+        currentSetId: setId
+      });
 
-  // // ② タイマー管理（3秒ルール用）
-  // const flushTimer = useRef(null);
+      const setRes = await api.get(`/set/match/${matchId}/set/${setId}`);
+      const serverSet = setRes.data;
 
-  // ② flushBuffer：まとめてバックエンドへ送信
+      setMatch(function (prevMatch) {
+        const merged = mergeSetIntoMatch(prevMatch, serverSet);
+        return {
+          ...merged,
+          currentSetId: setId
+        };
+      });
+      setSelectedSetId(setId);
+      applySetToSidebar(serverSet, setStart, setBench);
+    } catch (err) {
+      console.error("Failed to select set:", err);
+    }
+  };
+
+  /**
+   * 新しいセットを作成し、そのセットへ切り替える。
+   * スタメンは空で始まり、セットごとに選び直す。
+   */
+  const createNextSet = async () => {
+    if (!matchId) {
+      return;
+    }
+
+    try {
+      const createRes = await api.post(`/set/match/${matchId}`, {});
+      const newSetId = createRes.data.setId;
+
+      if (!newSetId) {
+        console.error("新セットの setId が取得できませんでした。");
+        return;
+      }
+
+      const matchRes = await api.get(`/match/${matchId}`, {
+        headers: { "Cache-Control": "no-cache" }
+      });
+      const updatedMatch = matchRes.data;
+
+      if (!updatedMatch.sets || updatedMatch.sets.length === 0) {
+        console.warn("新セット作成後の match.sets が空です:", updatedMatch);
+        return;
+      }
+
+      setMatch(updatedMatch);
+      setSelectedSetId(newSetId);
+
+      const newSet = findSetById(updatedMatch, newSetId);
+      applySetToSidebar(newSet, setStart, setBench);
+    } catch (err) {
+      console.error("Failed to create next set:", err);
+    }
+  };
+
+  /**
+   * 次のセットへ移動する。最終セットなら新規作成する。
+   */
+  const selectNextSet = async () => {
+    if (!match || !match.sets || !selectedSetId) {
+      return;
+    }
+
+    const currentIndex = match.sets.findIndex(function (setItem) {
+      return String(setItem._id) === String(selectedSetId);
+    });
+
+    if (currentIndex < 0) {
+      return;
+    }
+
+    if (currentIndex < match.sets.length - 1) {
+      const nextSet = match.sets[currentIndex + 1];
+      await selectSetById(nextSet._id);
+      return;
+    }
+
+    await createNextSet();
+  };
+
+  /**
+   * 前のセットへ移動する（先頭なら何もしない）。
+   */
+  const selectPreviousSet = async () => {
+    if (!match || !match.sets || !selectedSetId) {
+      return;
+    }
+
+    const currentIndex = match.sets.findIndex(function (setItem) {
+      return String(setItem._id) === String(selectedSetId);
+    });
+
+    if (currentIndex <= 0) {
+      return;
+    }
+
+    const previousSet = match.sets[currentIndex - 1];
+    await selectSetById(previousSet._id);
+  };
+
+  /**
+   * scoreBuffer を batch API へ送り、成功時は set を match に merge する。
+   */
   const flushBuffer = async (buffer) => {
-      if (!buffer || buffer.length === 0) return;   
+      if (!buffer || buffer.length === 0) {
+        return;
+      }
+
+      if (isFlushingRef.current) {
+        setScoreBuffer(function (prev) {
+          return [...buffer, ...prev];
+        });
+        return;
+      }
+
+      const setIdForFlush = buffer[0].setId || selectedSetId;
+
+      if (!matchId || !setIdForFlush) {
+        setScoreBuffer(function (prev) {
+          return [...buffer, ...prev];
+        });
+        return;
+      }
+
+      isFlushingRef.current = true;
+
       try {
-          await api.post("/scores/batch", { scores: buffer });
+          const scores = buffer.map(toBatchScore);
+          const res = await api.post("/scores/batch", {
+            matchId: matchId,
+            setId: setIdForFlush,
+            scores: scores
+          });
 
-          // Matchを再取得
-          const res = await api.get(`/match/${matchId}`)
-          const updatedMatch = res.data
+          const serverSet = res.data.set;
+          setMatch(function (prevMatch) {
+            return mergeSetIntoMatch(prevMatch, serverSet);
+          });
 
-          // Setを再取得
-          // const sets = await Promise.all(
-          //   updatedMatch.sets.map(async setObj => {
-          //     const setRes = await api.get(`/set/match/${matchId}/set/${setObj._id}`)
-          //     return setRes.data
-          //   })
-          // )
-
-          // updatedMatch.sets = sets
-          // setMatch(updatedMatch)
-
-          // Memberも更新
-          // const current = sets.find(s => s._id === selectedSetId)
-          const current = updatedMatch.sets.find(s => s._id === selectedSetId)
-          if (current) {
-            setStart(current.starPlayer)
-            setBench(current.benchMem)
+          if (String(serverSet._id) === String(selectedSetId)) {
+            applySetToSidebar(serverSet, setStart, setBench);
           }
-
-          console.log("Flushed:", buffer);
       } catch (err) {
           console.error("Flush failed:", err);
-          // 失敗時はバッファに戻す（再送のため）
-          setScoreBuffer((prev) => [...buffer, ...prev]);
+          setScoreBuffer(function (prev) {
+            return [...buffer, ...prev];
+          });
+          setMatch(function (prevMatch) {
+            return rollbackOptimisticActions(prevMatch, setIdForFlush, buffer);
+          });
+      } finally {
+          isFlushingRef.current = false;
       }
   };
     
-  // ③ pushScore：UI から呼ばれる唯一の保存入口
+  /**
+   * UI から呼ばれる唯一の保存入口。ローカルへ楽観 append し、buffer に積む。
+   */
   const pushScore = (action) => {
+    const setIdForAction = action.setId || selectedSetId;
+
+    setMatch(function (prevMatch) {
+      return appendActionToMatch(prevMatch, setIdForAction, action);
+    });
+
     setScoreBuffer((prev) => {
       const updated = [...prev, action];
 
-      // 3件溜まったら即 flush
       if (updated.length >= 3) {
         flushBuffer([...updated]);
         return [];
       }
 
-      // // タイマーが動いてなければ 5秒後に flush
-      // if (!flushTimer.current) {
-      //   flushTimer.current = setTimeout(() => {
-      //     flushBuffer(updated);
-      //     setScoreBuffer([]);
-      //     flushTimer.current = null;
-      //   }, 5000);
-      // }
       return updated;
     });
   };
 
-  // ④ 5秒ごとに自動 flush（残っていれば）
+  // 5秒ごとに自動 flush（残っていれば）
   useEffect(() => {
     const interval = setInterval(() => {
-      if (scoreBuffer.length > 0) {
-        flushBuffer(scoreBuffer);
-        setScoreBuffer([]);
-      }
+      setScoreBuffer(function (prev) {
+        if (prev.length === 0) {
+          return prev;
+        }
+
+        if (isFlushingRef.current) {
+          return prev;
+        }
+
+        flushBuffer([...prev]);
+        return [];
+      });
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [scoreBuffer]);
-
-  // // ⑤ アンマウント時に flush
-  // useEffect(() => {
-  //   return () => {
-  //     if (scoreBuffer.length > 0) {
-  //       flushBuffer(scoreBuffer);
-  //     }
-  //   };
-  // // 一度だけflush（依存配列を空にする）
-  // }, []);
+  }, [matchId, selectedSetId]);
   
   if (!match) return <div>Loading...</div>;
-  const currentSet = match.sets.find(s => s._id === selectedSetId);
 
   return (
     <div>
-        {/* {match && <Score match={match} setMatch={setMatch} id={matchId} />} */}
-        {/* {match && match.sets.map((set, index) => ( */}
         {match &&  (
           <Score 
             match={match}
-            // setMatch={setMatch} 
-            // id={matchId}
             selectedSetId={selectedSetId}
             setSelectedSetId={setSelectedSetId}
             start={start}
@@ -184,6 +398,8 @@ export default function Match() {
             opponent={opponent}
             setOpponent={setOpponent}
             pushScore={pushScore}
+            onSelectNextSet={selectNextSet}
+            onSelectPreviousSet={selectPreviousSet}
           />
           )}
     </div>

@@ -1,4 +1,3 @@
-// import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
 import RegisterPlayer from "./pages/playerList/RegisterPlayer";
@@ -10,34 +9,43 @@ import Match from "./pages/match/Match";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Menu from "./pages/menu/Menu";
 import MatchList from "./pages/match/MatchList";
-import PlayerDetails from "./pages/playerList/PlayerDetails";
-import OpponentDetails from "./pages/opponent/OpponentDetails";
 import { useContext } from "react";
 import { AuthContext } from "./state/AuthContext";
 import MatchListByDate from "./pages/match/MatchListByDate";
 
-function App() {
-  const {user} = useContext(AuthContext)
+/**
+ * ログイン必須ルート。未認証なら /login へ送る。
+ */
+function ProtectedRoute({ children }) {
+  const { user, token } = useContext(AuthContext)
 
-  // 全体的にRouteのurlはバックエンドと合わせる。
+  if (!user || !token) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
+
+function App() {
+  const { user, token } = useContext(AuthContext)
+  const isLoggedIn = Boolean(user && token)
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={ user ? <Menu /> : <Register/>} />
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route path="/register" element={user ? <Navigate to="/"/> : <Register/>}/>
+        <Route path="/" element={ isLoggedIn ? <Menu /> : <Navigate to="/login" replace />} />
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/register" element={isLoggedIn ? <Navigate to="/" replace /> : <Register />}/>
 
-        <Route path="/gamelist" element={<MatchList />}/>
-        <Route path="/gamelist/date" element={<MatchListByDate />}/>
-        <Route path="/match/:id" element={<Match />}/>
+        <Route path="/gamelist" element={<ProtectedRoute><MatchList /></ProtectedRoute>}/>
+        <Route path="/matches/:date" element={<ProtectedRoute><MatchListByDate /></ProtectedRoute>}/>
+        <Route path="/match/:id" element={<ProtectedRoute><Match /></ProtectedRoute>}/>
 
-        <Route path="/playerlist" element={<PlayerList />}/>
-        <Route path="/playerRegister" element={<RegisterPlayer />}/>
+        <Route path="/playerlist" element={<ProtectedRoute><PlayerList /></ProtectedRoute>}/>
+        <Route path="/playerRegister" element={<ProtectedRoute><RegisterPlayer /></ProtectedRoute>}/>
 
-        <Route path="/opponentRegister" element={<RegisterOpponent/>}/>
-        <Route path="/opponentlist" element={<OpponentList/>}/>
-        {/* <Route path="/playerlist/sawamura" element={<PlayerDetails />}/> */}
-        {/* <Route path="/opponentlist/karasuno" element={<OpponentDetails />}/> */}
+        <Route path="/opponentRegister" element={<ProtectedRoute><RegisterOpponent /></ProtectedRoute>}/>
+        <Route path="/opponentlist" element={<ProtectedRoute><OpponentList /></ProtectedRoute>}/>
       </Routes>
     </Router>
   )

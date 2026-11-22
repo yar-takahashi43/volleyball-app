@@ -1,46 +1,90 @@
-.row {
-  display: flex;
+.gamebar {
+  flex: 1;
   width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  padding-left: 12px;
+  padding-right: max(16px, env(safe-area-inset-right, 0));
+  box-sizing: border-box;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ヘッダー・行を同じ列定義で揃え、タブレット幅でもズレないようにする */
+.row {
+  display: grid;
+  grid-template-columns: minmax(200px, 2.2fr) minmax(300px, 3.4fr) minmax(72px, 0.8fr);
+  width: 100%;
+  min-width: 580px;
+  box-sizing: border-box;
 }
 
 .cell {
   display: flex;
-  flex: 1;
+  min-width: 0;
   border: 1px solid #ccc;
-  padding: 6px;
+  padding: 8px;
   justify-content: space-around;
   align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
 }
-
-.serveHeader, .serveSub, .serveCell { flex: 4; }
-.reasonHeader, .reasonSub, .reasonCell { flex: 5; }
-.scoreHeader, .scoreSub, .scoreCell { flex: 3; }
 
 .headerRow .cell {
   background: #f0f0f0;
   font-weight: bold;
+  font-size: 16px;
+  padding: 10px 8px;
 }
 
 .subHeaderRow .cell {
   background: #fafafa;
   font-size: 14px;
+  padding: 8px;
 }
 
-.gamebar {
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    margin-top: 2%;
-    padding-left: 12px;
-    padding-right: 20px;
-    box-sizing: border-box;
+.serveSub,
+.reasonSub,
+.scoreSub {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  align-items: center;
+  gap: 4px;
 }
 
-/* レスポンシブ */
-@media (max-width: 768px) {
+.serveSub > div,
+.reasonSub > div,
+.scoreSub > div {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
   .gamebar {
     width: 100%;
-    padding-left: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-top: 8px;
+  }
+
+  .row {
+    grid-template-columns: minmax(160px, 2fr) minmax(240px, 3fr) minmax(64px, 0.7fr);
+    min-width: 520px;
+  }
+}
+
+/* タブレット横: 余白と行高さを少し広げてタッチしやすくする */
+@media (min-width: 900px) and (max-width: 1366px) {
+  .cell {
+    padding: 10px 8px;
+    min-height: 48px;
+  }
+
+  .headerRow .cell {
+    font-size: 17px;
   }
 }

@@ -1,39 +1,52 @@
 .spikeContainer{
     background-color: #f8fcff;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .spikeTitle{
-  margin: 1% 0 0% 5%;
-  width: 300px;
+  margin: 8px 0 4px 8px;
+  width: auto;
+  max-width: 100%;
+}
+
+.spikeTable {
+  width: 100%;
+  margin: 0 0 8px 0;
 }
 
 .spikeTable table {
     border-collapse: collapse;
-    margin: 0% 0 2% 5%;
-    width: 300px;
-    /* width: 80%; */
-  }
-  
-  .spikeTable th, .spikeTable td {
+    margin: 0 0 0 8px;
+    width: calc(100% - 8px);
+    table-layout: fixed;
+}
+
+.spikeTable th,
+.spikeTable td {
     align-items: center;
     text-align: center;
-    font-size: large;
+    font-size: 15px;
     border: 1px solid black;
-    padding: 10px;
-    /* width: 50px; */
-  }
-  
-  .addSpike,
-  .minusSpike{
-    padding: 1px 7px;
-    margin: 0 10px;
-    border-radius: 9999px;
-    font-size: 20px;
+    padding: 10px 8px;
+}
+
+.addSpike,
+.minusSpike{
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    margin: 0 8px;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 1;
     background-color: rgb(221,194,162);
     box-shadow: 3px 3px 8px 1px gray;
     cursor: pointer;
     transition: all 0.3s;
+    touch-action: manipulation;
 }
 
 .addSpike:hover,

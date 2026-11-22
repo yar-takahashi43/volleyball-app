@@ -6,19 +6,24 @@ import { Link } from 'react-router-dom';
 
 export default function MatchListTop() {
     return (
-        <div className="top">
+        <div className="top" id="match-list-top">
             <div className='topLeft'>
-                <div className="topBack">
+                <Link
+                  to="/"
+                  id="match-list-back"
+                  className="topBack"
+                  style={{textDecoration: 'none', color: 'white', display: 'flex', alignItems: 'center'}}
+                >
                     <ArrowBackIcon className='backIcon'/>
-                <span className="iconName">前ページ</span>
-                </div>
+                    <span className="iconName">メニューへ</span>
+                </Link>
             </div>
             <div className="topName">
                 <span className="name">試合一覧</span>
             </div>
             <div className='topRight'>
                 <div className='topForward'>
-                    <Link to="/" style={{textDecoration: 'none', color: 'white'}}>
+                    <Link to="/" id="match-list-home" style={{textDecoration: 'none', color: 'white'}}>
                         <HomeIcon />
                         <span className='iconName'>TOPへ</span>
                     </Link>

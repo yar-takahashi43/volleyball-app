@@ -1,0 +1,39 @@
+---
+description: Git / GitHub safety — push and destructive ops need explicit user consent
+alwaysApply: true
+---
+
+# Git / GitHub Safety
+
+## 原則
+- 破壊的・公開・履歴書き換え操作は、ユーザーの明示同意があるときだけ実行する
+- 「やっておいて」「進めて」だけでは push / 公開 / force 系はしない
+- 秘密情報（`.env`, credentials, 鍵）は絶対に commit / push しない
+
+## ユーザー同意が必要（勝手にやらない）
+- `git push` / `git push -u`（通常 push も含む）
+- `gh pr create` / `gh pr merge` / release 作成
+- `git commit`（ユーザーがコミット依頼したときだけ）
+- `git commit --amend`
+- `git reset --hard` / `git checkout --`（作業破棄）
+- `git rebase` / `git rebase -i`
+- `git push --force` / `--force-with-lease`
+- リモート branch / tag の削除
+- `git config` の変更
+
+## 同意なしでやってよい（調査・同期のため）
+- `git status` / `git diff` / `git log` / `git show` / `git branch`
+- `git fetch`
+- `git pull`（現在ブランチの通常 pull。衝突時は勝手に解決せず報告）
+- `git clone`（ユーザーがリポジトリ取得を依頼した場合）
+- `git checkout` / `git switch`（既存ブランチ移動。新規ブランチ作成は依頼時のみ）
+- `git add`（コミット依頼の文脈でのみ。依頼前の先行 stage はしない）
+- `gh pr view` / `gh pr checks` / `gh run list` など読み取り系
+
+## 衝突・失敗時
+- merge conflict や hook 失敗は、勝手に force / amend で突破しない
+- 状況を報告し、次の操作の許可を取る
+
+## 例外
+- ユーザーが同じメッセージで明示した場合のみ許可
+  - 例: 「commit して push して」「force push してよい」

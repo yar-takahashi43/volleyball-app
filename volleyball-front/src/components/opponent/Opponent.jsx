@@ -19,11 +19,12 @@ export default function Opponent({opponent, onDelete, onUpdate}) {
     });
   }, [opponent]);
 
-
+  /**
+   * 対戦相手を削除する。
+   */
   const handleDelete = async () => {
     try {
       await api.delete(`opponent/${opponent._id}`)
-      // 親に削除依頼を渡す
       onDelete(opponent._id)
     } catch (err) {
       console.log("削除中にエラーが発生しました。" ,err)
@@ -31,10 +32,12 @@ export default function Opponent({opponent, onDelete, onUpdate}) {
     setPopup(false)
   }
 
+  /**
+   * 対戦相手情報を更新する。
+   */
   const handleUpdate = async () => {
     try {
       const res = await api.put(`opponent/${opponent._id}`, updatedOpponent)
-      // 更新後を親に渡す
       onUpdate(res.data)
     } catch (err) {
       console.log("更新中にエラーが発生しました。" ,err)
@@ -43,7 +46,7 @@ export default function Opponent({opponent, onDelete, onUpdate}) {
   }
 
   return (
-    <li className="opponentList">
+    <li className="opponentList" id={`opponent-list-item-${opponent._id}`}>
         <div className="opponentListContainer">
             <div className="eachopponent">
                 <span className="opponentName">
@@ -53,46 +56,61 @@ export default function Opponent({opponent, onDelete, onUpdate}) {
                     表示名：{opponent.label}
                 </span>
                 <div className="changeOpponent">
-                   <PersonRemoveIcon 
-                        className='deleteOpponent' 
+                   <PersonRemoveIcon
+                        className='deleteOpponent'
+                        id={`opponent-delete-icon-${opponent._id}`}
                         htmlColor='green'
                         onClick={() => setPopup(true)}
-                      />{popup && (
-                          <div className="popup">
+                      />
+                    {popup && (
+                      <div className="modalOverlay" id={`opponent-delete-overlay-${opponent._id}`} onClick={() => setPopup(false)}>
+                          <div className="popup" onClick={(e) => e.stopPropagation()}>
                             <div className="alert">
-                              <p>本当に削除しますか？</p>
-                              <p>削除したら戻れませんよ？</p>
+                              <p className="popupTitle">本当に削除しますか？</p>
+                              <p className="popupMessage">削除したら元に戻せません。</p>
                             </div>
-                              <button className="delete" onClick={handleDelete}>OK</button>
-                              <button className="cancel" onClick={() => setPopup(false)}>キャンセル</button>
+                            <div className="popupActions">
+                              <button type="button" className="popupButton popupButtonDanger" id={`opponent-delete-ok-${opponent._id}`} onClick={handleDelete}>削除する</button>
+                              <button type="button" className="popupButton popupButtonSecondary" id={`opponent-delete-cancel-${opponent._id}`} onClick={() => setPopup(false)}>キャンセル</button>
+                            </div>
                           </div>
-                      )}
+                      </div>
+                    )}
                     <span className='opponentListText'>削除</span>
 
-                    <ReplayCircleFilledIcon className='updateOpponent' 
+                    <ReplayCircleFilledIcon
+                          className='updateOpponent'
+                          id={`opponent-update-icon-${opponent._id}`}
                           htmlColor='blue'
                           onClick={() => setUpdatePopup(true)}
-                      />{updatePopup && (
-                          <div className="popup">
-                              <p>対戦相手情報を更新します。</p>
-                                <input 
-                                  type="text" 
+                      />
+                    {updatePopup && (
+                      <div className="modalOverlay" id={`opponent-update-overlay-${opponent._id}`} onClick={() => setUpdatePopup(false)}>
+                          <div className="popup" onClick={(e) => e.stopPropagation()}>
+                              <p className="popupTitle">対戦相手情報を更新します</p>
+                                <input
+                                  id={`opponent-update-name-${opponent._id}`}
+                                  type="text"
                                   className="opponentInfo"
                                   value={updatedOpponent.name}
                                   placeholder='名前'
                                   onChange={(e) => setUpdatedOpponent({...updatedOpponent, name: e.target.value})}
                                 />
-                                <input 
-                                  type="text" 
+                                <input
+                                  id={`opponent-update-label-${opponent._id}`}
+                                  type="text"
                                   className="opponentInfo"
                                   value={updatedOpponent.label}
                                   placeholder='表示名'
                                   onChange={(e) => setUpdatedOpponent({...updatedOpponent, label: e.target.value})}
                                 />
-                              <button className="update" onClick={handleUpdate}>OK</button>
-                              <button className="updateCancel" onClick={() => setUpdatePopup(false)}>キャンセル</button>
+                              <div className="popupActions">
+                                <button type="button" className="popupButton popupButtonPrimary" id={`opponent-update-ok-${opponent._id}`} onClick={handleUpdate}>更新する</button>
+                                <button type="button" className="popupButton popupButtonSecondary" id={`opponent-update-cancel-${opponent._id}`} onClick={() => setUpdatePopup(false)}>キャンセル</button>
+                              </div>
                           </div>
-                      )}
+                      </div>
+                    )}
                           <span className='opponentListText'>変更</span>
                 </div>
             </div>

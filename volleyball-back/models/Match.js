@@ -9,7 +9,7 @@ const MatchSchema = new mongoose.Schema(
         },
         result:{
             type: Boolean,
-            require: false,
+            required: false,
         },
         sets: [{ 
             type: mongoose.Schema.Types.ObjectId, ref: 'Set' 

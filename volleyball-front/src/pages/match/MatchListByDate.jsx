@@ -1,28 +1,57 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import Game from './Game'
+import MatchByDateTop from './MatchByDateTop'
 import { useParams } from 'react-router-dom'
+import api from '../../Api'
+import "../playerList/PlayerList.css"
+import "../home/Container.css"
 
 export default function MatchListByDate() {
   const [matches, setMatches] = useState([])
-  const {date} = useParams()
+  const [opponentMap, setOpponentMap] = useState({})
+  const { date } = useParams()
 
   useEffect(() => {
-    const fetchMatches = async () => {
-      const res = await axios.get(`match/matches/${date}`)
-      setMatches(res.data)
+    /**
+     * 指定日付の試合と対戦相手一覧を取得する。
+     */
+    const fetchMatchesAndOpponents = async () => {
+      try {
+        const [matchRes, opponentRes] = await Promise.all([
+          api.get(`/match/matches/${date}`),
+          api.get("/opponent/opponents"),
+        ])
+
+        const nextOpponentMap = {}
+        ;(opponentRes.data || []).forEach(function (opponent) {
+          nextOpponentMap[opponent._id] = opponent.label || opponent.name || "未設定"
+        })
+
+        setOpponentMap(nextOpponentMap)
+        setMatches(matchRes.data || [])
+      } catch (err) {
+        console.log(err)
+      }
     }
 
-    fetchMatches()
+    fetchMatchesAndOpponents()
   }, [date])
 
   return (
-    <div>
-      {matches.map((match) => (
-        <div key={match._id}>
-          <Game match={match} id={match._id} date={match.date}/>
-        </div>
-      ))}
+    <div className="container" id="match-list-by-date-page">
+      <div className="bar">
+        <MatchByDateTop date={date} />
+        <ul className="playerList" id="match-list-by-date">
+          {matches.map((match) => (
+            <Game
+              key={match._id}
+              match={match}
+              date={date}
+              opponentName={opponentMap[match.opponentId] || "未選択"}
+            />
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

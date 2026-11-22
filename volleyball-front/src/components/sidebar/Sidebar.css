@@ -1,17 +1,17 @@
 /* Sidebar 全体 */
 .Sidebar {
-  width: 340px;        /* ← ここで幅を広げる */
+  width: 340px;
   min-width: 340px;
   background-color: #f8fcff;
   flex-shrink: 0;
-  height: auto;        /* ← 固定高さを解除 */
-  max-height: none;   /* ← 画面より大きくならない */
-  overflow-y: visible; 
-  overflow-x: hidden;  /* ← 横スクロール防止 */
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
+  overflow-x: hidden;
   box-sizing: border-box;
   padding-right: 8px;
+  padding-left: env(safe-area-inset-left, 0);
 }
-
 
 /* 各セクション共通 */
 .memberContainer,
@@ -29,6 +29,8 @@
 .spikeTitle {
   margin: 8px 0 4px 8px;
   width: auto;
+  max-width: 100%;
+  font-size: 16px;
 }
 
 /* テーブルの外枠 */
@@ -48,7 +50,7 @@
   width: calc(100% - 8px);
   margin-left: 8px;
   border-collapse: collapse;
-  table-layout: fixed; /* ← 列幅を均等にして崩れ防止 */
+  table-layout: fixed;
 }
 
 /* セル共通 */
@@ -57,39 +59,76 @@
 .receptionTable th, .receptionTable td,
 .spikeTable th, .spikeTable td {
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid black;
-  padding: 8px;
+  padding: 10px 8px;
   white-space: nowrap;
 }
 
+/* タッチしやすい +/- ボタン（最小約 44px） */
 .addButton,
-.minusButton{
-    width: 36px;          /* ← 固定幅 */
-    height: 36px;         /* ← 固定高さ */
-    border-radius: 50%;   /* ← 完全な円になる */
-    padding: 1px 7px;
-    margin: 0 10px;
-    /* border-radius: 9999px; */
-    font-size: 20px;
+.minusButton,
+.addReception,
+.minusReception,
+.addSpike,
+.minusSpike {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0 8px;
+    font-size: 22px;
+    line-height: 1;
     background-color: rgb(221,194,162);
     box-shadow: 3px 3px 8px 1px gray;
     cursor: pointer;
     transition: all 0.3s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .addButton:hover,
-.minusButton:hover{
+.minusButton:hover,
+.addReception:hover,
+.minusReception:hover,
+.addSpike:hover,
+.minusSpike:hover {
     box-shadow: none;
     transform: translate(3px, 3px);
 }
 
-/* レスポンシブ */
-@media (max-width: 768px) {
+/* 狭い画面: 全幅 */
+@media (max-width: 899px) {
   .Sidebar {
     width: 100%;
     min-width: 100%;
     max-height: none;
     height: auto;
+    padding-right: 8px;
+    border-bottom: 1px solid #d0d7de;
+  }
+}
+
+/* タブレット横・デスクトップ: 画面内で縦スクロール */
+@media (min-width: 900px) {
+  .Sidebar {
+    width: 320px;
+    min-width: 320px;
+    position: sticky;
+    top: 56px;
+    max-height: calc(100vh - 56px);
+    max-height: calc(100dvh - 56px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 広いタブレット: Sidebar を少し広げる */
+@media (min-width: 1100px) {
+  .Sidebar {
+    width: 360px;
+    min-width: 360px;
   }
 }
